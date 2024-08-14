@@ -1,5 +1,9 @@
 import math
 import os
+
+
+
+
 # User A, B, and C all rate the same 3 movies on a scale of 1-10, below is each of their ratings:
 userA = [3, 5, 5]
 userB = [8, 6, 7]
@@ -107,33 +111,57 @@ def create_dataset(data_file, user_id_c, item_id_c, rating_c, max_data_users):
             users[w[user_id_c]] = {w[item_id_c]:w[rating_c]}
         if(len(users)>=max_data_users):
             break
+    print("Dataset Created")
     return users
 
 file_path = str(os.path.dirname(__file__)) + "/data/users-score-2023.txt"
-print(file_path)
-fullset = create_dataset(file_path, 0, 2, 4, 10000)
-print(fullset["1"], "\n")
-# print(fullset["1226"], "\n")
+fullset = create_dataset(file_path, 0, 2, 4, 100)
 while True:
     try:
-        print(fullset[str(input())], "\n")
+        n = str(input())
+        if(n == "cont"):
+            break
+        print(fullset[n], "\n")
     except:
         print("NOT FOUND!\n")
         continue
 
-# def k_nearest_neighbours(k, user, item, data):
-#     """
-#     To start, we need to consider the overlap of data, which points the user does have, and which they dont
-#     a good starting ground (for me at least) is at least 10% of the movies our target has rated must have also
-#     been rated by whoever we're finding the similarity to, this speeds up data collection a lot already.
-#     There's a couple criteria we need to consider when ranking total similarity:
-#       1. The pearson score
-#       2. The overlapping data
-#       3. Each person's regular preferences
-#     """
-#     # loop thru user to locate users with the same items
-#     users_matched = []
-#     for i in range(len(user)):
-#         for x in range(len(data)):
-#             if(user[i] == data[i] and data[i] not in users_matched):
+def k_nearest_neighbours(k, user, item, data):
+    """
+    To start, we need to consider the overlap of data, which points the user does have, and which they dont
+    a good starting ground (for me at least) is at least 10% of the movies our target has rated must have also
+    been rated by whoever we're finding the similarity to, this speeds up data collection a lot already.
+    There's a couple criteria we need to consider when ranking total similarity:
+      1. The pearson score
+      2. The overlapping data
+      3. Each person's regular preferences
+    """
+    user_watched = list(user.keys())
+    # loop thru user to locate users with the same items
+    users_matched = {}
+    # loop thru all user watched shows
+    for i in range(len(user_watched)):
+        # loops thru each user in given data
+        for x in data:
+            # return keys of data user, check if the item is watched also, puts it in matched users if not already in
+            if (user_watched[i] in data[x].keys()) and (x not in users_matched):
+                users_matched[x] = data[x]
     
+    return(users_matched)
+
+
+user = fullset["111"]
+# To test, we draw out user 111, who we have also printed, and then we will see if the matched users truly have watched at least one of the same animes
+def pretty_print_dict(d):
+	#take empty string
+	pretty_dict = ''
+	#get items for dict
+	for k, v in d.items():
+		pretty_dict += f'{k}: \n'
+		for value in v:
+			pretty_dict += f' {value}: {v[value]}\n'
+	#return result
+	return pretty_dict
+print(user)
+# print(pretty_print_dict(user))
+print(pretty_print_dict(k_nearest_neighbours(0, user, 0, fullset)))
