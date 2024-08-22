@@ -83,7 +83,7 @@ which is exactly how it should be. HELL YEAH IMMA MATH GOD BABY LETS GOOOO I COM
 The correlation between user F and any other user is much lower, it's in fact, negative, which works perfectly (:
 """
 
-def create_dataset(data_file, user_id_c, item_id_c, rating_c, max_data_users):
+def create_dataset(data_file, user_id_c, item_id_c, rating_c, max_data_users, skip):
     print("Creating Dataset...")
     # Split dataset into dictionary within dictionary, user associated with item associated with rating
     users = {"user_id":{"ani_id":"rating"}}
@@ -93,6 +93,9 @@ def create_dataset(data_file, user_id_c, item_id_c, rating_c, max_data_users):
     # we need to manually split the text
     # splitting f[i] by commas with no space following it
     # example: "hello world, whats up,new line" becomes "hello world, whats up" and "new line"
+        if skip != 0:
+            skip -= 1
+            continue
         w = []
         line = f[i]
         temp = ""
@@ -106,16 +109,18 @@ def create_dataset(data_file, user_id_c, item_id_c, rating_c, max_data_users):
             if x == len(line)-2:
                 w.append(temp)
         if(w[user_id_c] in users):
-            users[w[user_id_c]][w[item_id_c]] = w[rating_c]
+            # print(w[item_id_c])
+            # print(w[rating_c])
+            users[w[user_id_c]][w[item_id_c]] = int(w[rating_c])
         else:
-            users[w[user_id_c]] = {w[item_id_c]:w[rating_c]}
+            users[w[user_id_c]] = {w[item_id_c]:int(w[rating_c])}
         if(len(users)>=max_data_users):
             break
     print("Dataset Created")
     return users
 
 file_path = str(os.path.dirname(__file__)) + "/data/users-score-2023.txt"
-fullset = create_dataset(file_path, 0, 2, 4, 1000)
+fullset = create_dataset(file_path, 0, 2, 4, 100, 1)
 while True:
     try:
         n = str(input())
@@ -172,16 +177,27 @@ def k_nearest_neighbours(k, user, item, data):
     # code i found on stackoverflow for sorting dict by values cause I cannot be assed to do this with more for loops
     similarity_scores = {k: v for k, v in sorted(similarity_scores.items(), key=lambda item: item[1])}
     print(similarity_scores)
-    sscores_values = similarity_scores.values()
-    sscores_keys = similarity_scores.keys()
+    sscores_values = list(similarity_scores.values())
+    sscores_keys = list(similarity_scores.keys())
     total = 0
+    total_sscore = 0
     for i in range(k):
         # run thru the similarity scores, find that users rating for the item and the score they have, multiply
         try:
-            total += int(data[sscores_keys[-i-1]][item]) * sscores_values[-i-1]
+            if(sscores_values[-i-1] == -2):
+                continue
+            total += (int(data[sscores_keys[-i-1]][item]) - (sum(data[sscores_keys[-i-1]].values())/len(data[sscores_keys[-i-1]]))) * sscores_values[-i-1]
+            total_sscore += sscores_values[-i-1]
+            print(total_sscore)
+            print(sscores_values[-i-1])
         except:
             print("welp, something broke but it's probably fine (:")
-            break
+            continue
+    print(sum(user.values()))
+    print(total_sscore)
+    prediction = total/total_sscore + (sum(user.values())/len(user))
+    print(prediction)
+    return prediction
 
     
 
