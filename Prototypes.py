@@ -100,7 +100,7 @@ def create_dataset(data_file, user_id_c, item_id_c, rating_c, max_data_users, sk
         line = f[i]
         temp = ""
         for x in range(len(line)):
-            if line[x] == "," and line[x+1] != " ":
+            if line[x] == "," and (line[x+1] != " " or line[x+1:x+3] == "\",") and line[x+1:x+7] != "Blood\"":
                 w.append(temp)
                 temp = ""
                 continue
@@ -109,7 +109,7 @@ def create_dataset(data_file, user_id_c, item_id_c, rating_c, max_data_users, sk
             if x == len(line)-2:
                 w.append(temp)
         if(w[user_id_c] in users):
-            # print(w[item_id_c])
+            print(w[item_id_c])
             # print(w[rating_c])
             users[w[user_id_c]][w[item_id_c]] = int(w[rating_c])
         else:
@@ -120,7 +120,7 @@ def create_dataset(data_file, user_id_c, item_id_c, rating_c, max_data_users, sk
     return users
 
 file_path = str(os.path.dirname(__file__)) + "/data/users-score-2023.txt"
-fullset = create_dataset(file_path, 0, 2, 4, 100, 1)
+fullset = create_dataset(file_path, 0, 2, 4, 1000, 1)
 while True:
     try:
         n = str(input())
@@ -201,14 +201,13 @@ def k_nearest_neighbours(k, user, item, data):
 
     
 
-
-
-k_nearest_neighbours(50, fullset["1"], "21", fullset)
 #hello its me heheheh
 
 # print(pretty_print_dict(user))
-f = open(str(os.path.dirname(__file__)) + "/data/output.txt", "w")
-# f.write(pretty_print_dict(k_nearest_neighbours(0, user, 0, fullset)))
+f = open(str(os.path.dirname(__file__)) + "/data/output.txt", "a")
+f.write(str(k_nearest_neighbours(50, fullset["1"], "21", fullset)))
+f.write(str(k_nearest_neighbours(50, fullset["1"], "48", fullset)))
+f.write(str(k_nearest_neighbours(50, fullset["1"], "320", fullset)))
 f.close()
 
 # Using list of users matched, go thru list and find raw simliarity score with each
