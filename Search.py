@@ -47,13 +47,16 @@ for i in range(0,N):
                 print(w[22])
         except:
             print("oops")
-            print(temp)
         temp = line
             
     else:
         temp += line
 
-
+file_path = str(os.path.dirname(__file__))
+n = open(file_path + "/data/anime-ids.txt", 'w')
+for i in anime_ids:
+    n.write(i + "\n")
+n.close()
 
 while(True):
     search = str(input("What would you like to search? (Q to Quit):\n(I for ID)\n(N for Name)\n")).upper()
@@ -72,8 +75,7 @@ while(True):
             if search in names[i] or search in english[i] or search in japanese[i]:
                 index_list.append(i)
                 members_list.append(int(members[i]))
-        print(index_list)
-        
+
         sorted_list = [x for _,x in sorted(zip(members_list,index_list))]
 
         for i in range(len(sorted_list)):
@@ -81,7 +83,6 @@ while(True):
             print(i+1, ".", anime_ids[index], names[index], english[index], japanese[index], members[index])
         try:
             index = sorted_list[len(sorted_list) - int(input("Which one?\n"))]
-            print(sorted_list)
             print(anime_ids[index] + "\n" + names[index] + "\n" + scores[index] + "\n" + genres[index] + "\n" + english[index] + "\n" + japanese[index] + "\n" + types[index] + "\n" + members[index])
         except:
             print("not real input")    

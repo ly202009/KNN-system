@@ -53,8 +53,6 @@ def pearson_correlation(user1, user2):
     # To do this, we take the average of the user's ratings, then we subtract that average from every rating.
     # This means that anything below average is negative, anything above is positive, and anything that is average
     # is neutral, AKA 0
-    print(user1)
-    print(user2)
     user1avg=sum(user1)/len(user1)
     user2avg=sum(user2)/len(user2)
     for i in range(len(user1)):
@@ -116,7 +114,6 @@ def create_dataset(data_file, user_id_c, item_id_c, rating_c, max_data_users, sk
         if(len(users)>=max_data_users):
             break
     print("Dataset Created")
-    print(len(users))
     return users
 
 file_path = str(os.path.dirname(__file__)) + "/data/users-score-2023.txt"
@@ -168,15 +165,10 @@ def k_nearest_neighbours(k, user, item, data):
                 original_user_scores.append(int(user[user_keys[x]]))
                 compared_user_scores.append(int(users_matched[users_matched_keys[i]][user_keys[x]]))
             
-        
-        print(original_user_scores)
-        print(compared_user_scores)
-        print(len(original_user_scores)/len(user_keys))
         similarity_scores[users_matched_keys[i]] = len(original_user_scores)/len(user_keys) * pearson_correlation(original_user_scores, compared_user_scores)
     
     # code i found on stackoverflow for sorting dict by values cause I cannot be assed to do this with more for loops
     similarity_scores = {k: v for k, v in sorted(similarity_scores.items(), key=lambda item: item[1])}
-    print(similarity_scores)
     sscores_values = list(similarity_scores.values())
     sscores_keys = list(similarity_scores.keys())
     total = 0
@@ -188,14 +180,13 @@ def k_nearest_neighbours(k, user, item, data):
                 continue
             total += (int(data[sscores_keys[-i-1]][item]) - (sum(data[sscores_keys[-i-1]].values())/len(data[sscores_keys[-i-1]]))) * sscores_values[-i-1]
             total_sscore += sscores_values[-i-1]
-            print(total_sscore)
-            print(sscores_values[-i-1])
         except:
-            print("welp, something broke but it's probably fine (:")
+            # print("welp, something broke but it's probably fine (:")
             continue
-    print(sum(user.values()))
-    print(total_sscore)
-    prediction = total/total_sscore + (sum(user.values())/len(user))
+    try:
+        prediction = total/total_sscore + (sum(user.values())/len(user))
+    except:
+        return
     print(prediction)
     return prediction
 
@@ -203,7 +194,7 @@ def k_nearest_neighbours(k, user, item, data):
 
 #hello its me heheheh
 
-# print(pretty_print_dict(user))
+
 f = open(str(os.path.dirname(__file__)) + "/data/output.txt", "a")
 f.write("\n")
 f.write(str(k_nearest_neighbours(50, fullset["1"], "21", fullset)))
@@ -214,35 +205,82 @@ f.write(str(k_nearest_neighbours(50, fullset["1"], "320", fullset)))
 f.write("\n")
 # Cool, so it works and is completely functional
 # Now, we're going to TEST ON SOME LAB RATS
-joshua = {"21":1,
-          "40748":1,
-          "":10,
-          "":10}
+joshua = {"21":1, # One piece
+          "40748":1, # jjk
+          "28819":10, # My wife is the student council president (wtf josh)
+          "8769":10} # I don't even want to write the title for this holy fu-
 
-j_l = {"38000":10,
-       "20":8,
-       "40748":7,
-       "20583":9}
+print(k_nearest_neighbours(50, joshua, "227", fullset))
+j_l = {"38000":10, # Demon slayer
+       "20":8, # Naruto
+       "40748":7, # Jjk
+       "20583":9} # Haikyuu
 
-f.write(str(k_nearest_neighbours(50, j_l, "20", fullset)))
-f.write("\n")
-# j_l = {"21":1,
-#        "40748":1,
-#        "":10,
-#        "":10}
+r_y = {"21":8, # One Piece
+       "6702":7, # Fairy Tail
+       "235":7, # Case Closed(conan)
+    #    "":8.5, # Solo Levelling (2024 release, not part of dataset unforutnately)
+       "5114":10, # FMAB (??? wth is that) ohh fullmetal alch
+       "40478":9, # jjk
+       "38000":9.5, # Demon Slayer
+       "9919":8} # Blue Exorcist
+
+e_s = {"":10, # Code Geass: Lelouch of the Rebellion
+       "":10, # Code Geass: Lelouch of the Rebellion R2
+       "853":9, # Ouran High School Host Club
+       "":9, # I'm giving up labelling these there's like 50
+       "":9,
+       "":9,
+       "":10,
+       "":10,
+       }
+
+p_s = {"30276":8} # Just one punch man bruh patrick wth
 
 f.close()
 
-# Using list of users matched, go thru list and find raw simliarity score with each
-# To do this, for each user, list the movies in common and the scores of each with try value "id" in user, match
-# each value in 1:1 arrays, then process arrays in 
-# loop thru users matched
-# loop thru target items
-# loop thru current users matched user
-# if key found, then list the score in one array, then the users score in another, continue
-# once all matched sorted, find similarity
-# add similarity to dictionary with user_id to similarity score, then complete by sorting dictionary by value
 
-# cycle thru user dictionary
-# cycle thru matched user
-# check if a value in matched user is the current value in user dictionary
+# Okay cool, lab-rats in, we should make a function called predict():
+
+def predict(user, content_ids, data, top_x):
+    # This should be a very simple function that runs KNN on a loop, running thru a list of all content_ids,
+    # in this case being anime ids, and predicting with KNN the user's rating for each anime item, adding the 
+    # found score to two arrays matching prediction to id, take the top_x returns, remove any that have already 
+    # been watched by the user, sort the rest by the member count of each
+    predictions = []
+    ids = []
+    for i in range(1000):
+        content = content_ids[i]
+        predictions.append(k_nearest_neighbours(50, user, content, data))
+        ids.append(content)
+    
+    # sort ids by prediction rating in increasing order
+    ids = [x for _,x in sorted(zip(predictions,ids), reverse=True)]
+    predictions = sorted(predictions, reverse=True)
+
+    user_ids = list(user.keys())
+
+    for i in range(len(ids)):
+        # going thru all the ids predicted for, if the id is in user_ids, then remove this item with remove()
+        try:
+            if ids[i] in user_ids:
+                ids.remove(ids[i])
+                predictions.remove(predictions[i])
+        except:
+            print("oh well")
+
+    ids = ids[:top_x]
+    predictions = predictions[:top_x]
+
+    return ids, predictions
+
+
+anime_ids = []
+file_path = str(os.path.dirname(__file__))
+n = open(file_path + "/data/anime-ids.txt", 'r', encoding="utf8").readlines()
+for i in n:
+    if i.replace("\n","").isnumeric() == True:
+        anime_ids.append(i.replace("\n",""))
+ids, predictions = predict(joshua, anime_ids, fullset, 100)
+for i in range(len(ids)):
+    print(ids[i], predictions[i])
