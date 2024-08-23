@@ -34,28 +34,31 @@ for i in range(0,N):
         # print(w)
         try:
             # print("hello")
-            anime_ids.append(str(w[0]))
+            anime_ids.append(w[0])
             names.append(str(w[1]).upper())
-            scores.append(w[2])
-            genres.append(w[3])
-            english.append(str(w[4]).upper())
-            japanese.append(w[5])
+            english.append(str(w[2]).upper())
+            japanese.append(w[3])
+            scores.append(w[4])
+            genres.append(w[5])
             types.append(w[7])
             members.append(w[22])
+            if w[0] == "40748":
+                print(temp)
+                print(w[22])
         except:
             print("oops")
+            print(temp)
         temp = line
             
     else:
         temp += line
 
-    
+
 
 while(True):
     search = str(input("What would you like to search? (Q to Quit):\n(I for ID)\n(N for Name)\n")).upper()
     if(search == "I"):
         search = str(input("What?\n")).upper()
-        print(search)
         try:
             index = anime_ids.index(search)
             print(anime_ids[index] + "\n" + names[index] + "\n" + scores[index] + "\n" + genres[index] + "\n" + english[index] + "\n" + japanese[index] + "\n" + types[index] + "\n" + members[index])
@@ -63,21 +66,45 @@ while(True):
             print("Not Found!")
     elif(search == "N"):
         search = str(input("What?\n")).upper()
+        index_list = []
+        members_list = []
+        for i in range(len(names)):
+            if search in names[i] or search in english[i] or search in japanese[i]:
+                index_list.append(i)
+                members_list.append(int(members[i]))
+        print(index_list)
+        
+        sorted_list = [x for _,x in sorted(zip(members_list,index_list))]
+
+        for i in range(len(sorted_list)):
+            index = sorted_list[len(sorted_list)-i-1]
+            print(i+1, ".", anime_ids[index], names[index], english[index], japanese[index], members[index])
         try:
-            index = names.index(search)
+            index = sorted_list[len(sorted_list) - int(input("Which one?\n"))]
+            print(sorted_list)
             print(anime_ids[index] + "\n" + names[index] + "\n" + scores[index] + "\n" + genres[index] + "\n" + english[index] + "\n" + japanese[index] + "\n" + types[index] + "\n" + members[index])
         except:
-            try:
-                index = english.index(search)
-                print(anime_ids[index] + "\n" + names[index] + "\n" + scores[index] + "\n" + genres[index] + "\n" + english[index] + "\n" + japanese[index] + "\n" + types[index] + "\n" + members[index])
-            except:
-                try:
-                    index = japanese.index(search)
-                    print(anime_ids[index] + "\n" + names[index] + "\n" + scores[index] + "\n" + genres[index] + "\n" + english[index] + "\n" + japanese[index] + "\n" + types[index] + "\n" + members[index])
-                except:
-                    print("Not Found!")
+            print("not real input")    
+        # try:
+        #     index = names.index(search)
+        #     print(anime_ids[index] + "\n" + names[index] + "\n" + scores[index] + "\n" + genres[index] + "\n" + english[index] + "\n" + japanese[index] + "\n" + types[index] + "\n" + members[index])
+        # except:
+        #     try:
+        #         index = english.index(search)
+        #         print(anime_ids[index] + "\n" + names[index] + "\n" + scores[index] + "\n" + genres[index] + "\n" + english[index] + "\n" + japanese[index] + "\n" + types[index] + "\n" + members[index])
+        #     except:
+        #         try:
+        #             index = japanese.index(search)
+        #             print(anime_ids[index] + "\n" + names[index] + "\n" + scores[index] + "\n" + genres[index] + "\n" + english[index] + "\n" + japanese[index] + "\n" + types[index] + "\n" + members[index])
+        #         except:
+        #             print("Not Found!")
     elif(search == "Q"):
         break
     else:
         print("Not an input, try again:")
         continue
+
+
+# For the name search, we need it to find all occurences of name even within an item
+# Scan thru each name, if query in name, add the current index to index_list and the members int to members_list
+# sort index_list by members_list, then print the english, japanese, and members count with index_list

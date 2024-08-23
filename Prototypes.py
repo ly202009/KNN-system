@@ -96,20 +96,19 @@ def create_dataset(data_file, user_id_c, item_id_c, rating_c, max_data_users, sk
         if skip != 0:
             skip -= 1
             continue
-        w = []
         line = f[i]
-        temp = ""
-        for x in range(len(line)):
-            if line[x] == "," and (line[x+1] != " " or line[x+1:x+3] == "\",") and line[x+1:x+7] != "Blood\"":
-                w.append(temp)
-                temp = ""
-                continue
+        # temp = ""
+        # for x in range(len(line)):
+        #     if line[x] == "," and (line[x+1] != " " or line[x+1:x+3] == "\",") and line[x+1:x+7] != "Blood\"":
+        #         w.append(temp)
+        #         temp = ""
+        #         continue
 
-            temp += str(line[x])
-            if x == len(line)-2:
-                w.append(temp)
+        #     temp += str(line[x])
+        #     if x == len(line)-2:
+        #         w.append(temp)
+        w = line.split("\t")
         if(w[user_id_c] in users):
-            print(w[item_id_c])
             # print(w[rating_c])
             users[w[user_id_c]][w[item_id_c]] = int(w[rating_c])
         else:
@@ -117,10 +116,11 @@ def create_dataset(data_file, user_id_c, item_id_c, rating_c, max_data_users, sk
         if(len(users)>=max_data_users):
             break
     print("Dataset Created")
+    print(len(users))
     return users
 
 file_path = str(os.path.dirname(__file__)) + "/data/users-score-2023.txt"
-fullset = create_dataset(file_path, 0, 2, 4, 1000, 1)
+fullset = create_dataset(file_path, 0, 2, 4, 100000, 1)
 while True:
     try:
         n = str(input())
@@ -205,15 +205,32 @@ def k_nearest_neighbours(k, user, item, data):
 
 # print(pretty_print_dict(user))
 f = open(str(os.path.dirname(__file__)) + "/data/output.txt", "a")
+f.write("\n")
 f.write(str(k_nearest_neighbours(50, fullset["1"], "21", fullset)))
+f.write("\n")
 f.write(str(k_nearest_neighbours(50, fullset["1"], "48", fullset)))
+f.write("\n")
 f.write(str(k_nearest_neighbours(50, fullset["1"], "320", fullset)))
+f.write("\n")
 # Cool, so it works and is completely functional
 # Now, we're going to TEST ON SOME LAB RATS
 joshua = {"21":1,
-          "38777":1,
+          "40748":1,
           "":10,
           "":10}
+
+j_l = {"38000":10,
+       "20":8,
+       "40748":7,
+       "20583":9}
+
+f.write(str(k_nearest_neighbours(50, j_l, "20", fullset)))
+f.write("\n")
+# j_l = {"21":1,
+#        "40748":1,
+#        "":10,
+#        "":10}
+
 f.close()
 
 # Using list of users matched, go thru list and find raw simliarity score with each
