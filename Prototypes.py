@@ -208,6 +208,12 @@ f = open(str(os.path.dirname(__file__)) + "/data/output.txt", "a")
 f.write(str(k_nearest_neighbours(50, fullset["1"], "21", fullset)))
 f.write(str(k_nearest_neighbours(50, fullset["1"], "48", fullset)))
 f.write(str(k_nearest_neighbours(50, fullset["1"], "320", fullset)))
+# Cool, so it works and is completely functional
+# Now, we're going to TEST ON SOME LAB RATS
+joshua = {"21":1,
+          "38777":1,
+          "":10,
+          "":10}
 f.close()
 
 # Using list of users matched, go thru list and find raw simliarity score with each
