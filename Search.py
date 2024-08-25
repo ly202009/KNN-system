@@ -42,9 +42,6 @@ for i in range(0,N):
             genres.append(w[5])
             types.append(w[7])
             members.append(w[22])
-            if w[0] == "40748":
-                print(temp)
-                print(w[22])
         except:
             print("oops")
         temp = line

@@ -1,17 +1,6 @@
 import math
 import os
 
-
-
-
-# User A, B, and C all rate the same 3 movies on a scale of 1-10, below is each of their ratings:
-userA = [3, 5, 5]
-userB = [8, 6, 7]
-userC = [3, 5, 2]
-
-# With these three users, we can guess that users A and C are likely more similar than AB or BC
-
-# To find a direct measure of similarity, we use euclidean distance (linear distance between the two points)
 def euc_dist(user1, user2):
     """
     In a 2D space, finding the euclidean distance between two points is possible with pythagorean theorem, or a^2 + b^2 = c^2
@@ -29,30 +18,13 @@ def euc_dist(user1, user2):
     distance = math.sqrt(distance)
     return distance
 
-# print(euc_dist(userA, userB))
-# print(euc_dist(userB, userC))
-# print(euc_dist(userA, userC))
-
 """
 The expected output should show that users A and C have the smallest distance and therefore the closest similarity.
 
 Now with another set of users, same rules, more movies.
 """
-userD = [1,4,2,5,1,5,8,3,5,3]
-userE = [1,8,3,10,2,9,10,4,9,6]
-userF = [9,1,8,1,9,1,8,1,9,1]
-# We can observe userD commonly rates 5 or under instead of 10. To counter this, we can use pearson correlation.
-# By normalizing userD, we are assuming that a 5 from D is good and one of the best ratings D is willing to give
-# So any movie rated 5 by D is seen, mathematically, as good.
-# If we compare that to userE, which I purposefully made to reflect similar values to D just on the full scale of 1-10,
-# we see that D and E agree on ratings quite often. So they should reflect the best similarity value.
-# F has been purposefully made to reflect the opposite values of D and E, which should hopefully reflect a negative
-# pearson coeff
+
 def pearson_correlation(user1, user2):
-    # to use pearson, we first "normalize" the data
-    # To do this, we take the average of the user's ratings, then we subtract that average from every rating.
-    # This means that anything below average is negative, anything above is positive, and anything that is average
-    # is neutral, AKA 0
     user1avg=sum(user1)/len(user1)
     user2avg=sum(user2)/len(user2)
     for i in range(len(user1)):
@@ -71,10 +43,6 @@ def pearson_correlation(user1, user2):
     final = (a**2 + b**2 - c**2)/(2*a*b)
     return final
 
-print(pearson_correlation(userD, userE))
-print(pearson_correlation(userE, userF))
-print(pearson_correlation(userD, userF))
-
 """
 The results show that the highest correlation on a scale of -1 (dissimilar) to 1 (similar) is between D and E,
 which is exactly how it should be. HELL YEAH IMMA MATH GOD BABY LETS GOOOO I COMPLETELY IMPROV THIS DIDNT HAVE TO LEARN DOT PRODUCTS IDK WHAT THOSE ARE
@@ -83,31 +51,16 @@ The correlation between user F and any other user is much lower, it's in fact, n
 
 def create_dataset(data_file, user_id_c, item_id_c, rating_c, max_data_users, skip):
     print("Creating Dataset...")
-    # Split dataset into dictionary within dictionary, user associated with item associated with rating
     users = {"user_id":{"ani_id":"rating"}}
     f = open(data_file, 'r', encoding="utf8").readlines()
     N = len(f)-1
     for i in range(0,N):
-    # we need to manually split the text
-    # splitting f[i] by commas with no space following it
-    # example: "hello world, whats up,new line" becomes "hello world, whats up" and "new line"
         if skip != 0:
             skip -= 1
             continue
         line = f[i]
-        # temp = ""
-        # for x in range(len(line)):
-        #     if line[x] == "," and (line[x+1] != " " or line[x+1:x+3] == "\",") and line[x+1:x+7] != "Blood\"":
-        #         w.append(temp)
-        #         temp = ""
-        #         continue
-
-        #     temp += str(line[x])
-        #     if x == len(line)-2:
-        #         w.append(temp)
         w = line.split("\t")
         if(w[user_id_c] in users):
-            # print(w[rating_c])
             users[w[user_id_c]][w[item_id_c]] = int(w[rating_c])
         else:
             users[w[user_id_c]] = {w[item_id_c]:int(w[rating_c])}
@@ -115,18 +68,6 @@ def create_dataset(data_file, user_id_c, item_id_c, rating_c, max_data_users, sk
             break
     print("Dataset Created")
     return users
-
-file_path = str(os.path.dirname(__file__)) + "/data/users-score-2023.txt"
-fullset = create_dataset(file_path, 0, 2, 4, 100000, 1)
-while True:
-    try:
-        n = str(input())
-        if(n == "cont"):
-            break
-        print(fullset[n], "\n")
-    except:
-        print("NOT FOUND!\n")
-        continue
 
 def k_nearest_neighbours(k, user, item, data):
     """
@@ -141,9 +82,7 @@ def k_nearest_neighbours(k, user, item, data):
     The person also needs to have actually rated the item that is being predicted for already as well.
     """
     user_watched = list(user.keys())
-    # loop thru user to locate users with the same items
     users_matched = {}
-    # loop thru all user watched shows
     for i in range(len(user_watched)):
         # loops thru each user in given data
         for x in data:
@@ -151,7 +90,6 @@ def k_nearest_neighbours(k, user, item, data):
             if (user_watched[i] in data[x].keys()) and (x not in users_matched) and (item in data[x].keys()):
                 users_matched[x] = data[x]
     
-    # return(users_matched)
     similarity_scores = {}
     users_matched_keys = list(users_matched.keys())
     user_keys = list(user.keys())
@@ -185,26 +123,27 @@ def k_nearest_neighbours(k, user, item, data):
             continue
     try:
         prediction = total/total_sscore + (sum(user.values())/len(user))
+        print(total)
+        print(total_sscore)
+        print(sum(user.values()))
+        print(len(user))
     except:
         return
-    print(prediction)
     return prediction
 
-    
-
 #hello its me heheheh
+file_path = str(os.path.dirname(__file__)) + "/data/users-score-2023.txt"
+fullset = create_dataset(file_path, 0, 2, 4, 100000, 1)
+while True:
+    try:
+        n = str(input())
+        if(n == "cont"):
+            break
+        print(fullset[n], "\n")
+    except:
+        print("NOT FOUND!\n")
+        continue
 
-
-f = open(str(os.path.dirname(__file__)) + "/data/output.txt", "a")
-f.write("\n")
-f.write(str(k_nearest_neighbours(50, fullset["1"], "21", fullset)))
-f.write("\n")
-f.write(str(k_nearest_neighbours(50, fullset["1"], "48", fullset)))
-f.write("\n")
-f.write(str(k_nearest_neighbours(50, fullset["1"], "320", fullset)))
-f.write("\n")
-# Cool, so it works and is completely functional
-# Now, we're going to TEST ON SOME LAB RATS
 joshua = {"21":1, # One piece
           "40748":1, # jjk
           "28819":10, # My wife is the student council president (wtf josh)
@@ -237,7 +176,6 @@ e_s = {"":10, # Code Geass: Lelouch of the Rebellion
 
 p_s = {"30276":8} # Just one punch man bruh patrick wth
 
-f.close()
 
 
 # Okay cool, lab-rats in, we should make a function called predict():
@@ -281,10 +219,12 @@ n = open(file_path + "/data/anime-ids.txt", 'r', encoding="utf8").readlines()
 for i in n:
     if i.replace("\n","").isnumeric() == True:
         anime_ids.append(i.replace("\n",""))
+
+
 # ids, predictions = predict(joshua, anime_ids, fullset, 100)
 # for i in range(len(ids)):
 #     print(ids[i], predictions[i])
 
-ids, predictions = predict(r_y, anime_ids, fullset, 100)
-for i in range(len(ids)):
-    print(ids[i], predictions[i])
+# ids, predictions = predict(r_y, anime_ids, fullset, 100)
+# for i in range(len(ids)):
+#     print(ids[i], predictions[i])
