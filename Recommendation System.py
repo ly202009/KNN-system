@@ -51,7 +51,7 @@ The correlation between user F and any other user is much lower, it's in fact, n
 
 def create_dataset(data_file, user_id_c, item_id_c, rating_c, max_data_users, skip):
     print("Creating Dataset...")
-    users = {"user_id":{"ani_id":"rating"}}
+    users = {}
     f = open(data_file, 'r', encoding="utf8").readlines()
     N = len(f)-1
     for i in range(0,N):
@@ -61,6 +61,9 @@ def create_dataset(data_file, user_id_c, item_id_c, rating_c, max_data_users, sk
         line = f[i]
         w = line.split("\t")
         if(w[user_id_c] in users):
+            if(w[rating_c] == '"'):
+                print(w[user_id_c])
+                print(w[item_id_c])
             users[w[user_id_c]][w[item_id_c]] = int(w[rating_c])
         else:
             users[w[user_id_c]] = {w[item_id_c]:int(w[rating_c])}
@@ -106,34 +109,41 @@ def k_nearest_neighbours(k, user, item, data):
         similarity_scores[users_matched_keys[i]] = len(original_user_scores)/len(user_keys) * pearson_correlation(original_user_scores, compared_user_scores)
     
     # code i found on stackoverflow for sorting dict by values cause I cannot be assed to do this with more for loops
-    similarity_scores = {k: v for k, v in sorted(similarity_scores.items(), key=lambda item: item[1])}
+    similarity_scores = {k: v for k, v in sorted(similarity_scores.items(), key=lambda item: item[1], reverse=True)}
+    # list of similarity scores
     sscores_values = list(similarity_scores.values())
+    # list of user ids
     sscores_keys = list(similarity_scores.keys())
     total = 0
     total_sscore = 0
-    for i in range(k):
+    i = 0
+    while i < k:
         # run thru the similarity scores, find that users rating for the item and the score they have, multiply
         try:
-            if(sscores_values[-i-1] == -2):
+            if(sscores_values[i] == -2):
+                i += 1
+                k += 1
                 continue
-            total += (int(data[sscores_keys[-i-1]][item]) - (sum(data[sscores_keys[-i-1]].values())/len(data[sscores_keys[-i-1]]))) * sscores_values[-i-1]
-            total_sscore += sscores_values[-i-1]
+            # Total sum of centered similar user scores multiplied by their similarity score as weight
+            # problem: the regular score when averaged then multiplied by similarity 
+            total += (int(data[sscores_keys[i]][item]) - (sum(data[sscores_keys[i]].values())/len(data[sscores_keys[i]]))) * sscores_values[i]
+            total_sscore += sscores_values[i]
+            i += 1
         except:
-            # print("welp, something broke but it's probably fine (:")
-            continue
+            print("welp, something broke but it's probably fine (:")
+            break
+
+    print(total)
+    print(total_sscore)
     try:
         prediction = total/total_sscore + (sum(user.values())/len(user))
-        print(total)
-        print(total_sscore)
-        print(sum(user.values()))
-        print(len(user))
     except:
         return
     return prediction
 
 #hello its me heheheh
-file_path = str(os.path.dirname(__file__)) + "/data/users-score-2023.txt"
-fullset = create_dataset(file_path, 0, 2, 4, 100000, 1)
+file_path = str(os.path.dirname(__file__)) + "/data/cleaned-score-2023.txt"
+fullset = create_dataset(file_path, 0, 2, 3, 50000, 1)
 while True:
     try:
         n = str(input())
@@ -149,7 +159,9 @@ joshua = {"21":1, # One piece
           "28819":10, # My wife is the student council president (wtf josh)
           "8769":10} # I don't even want to write the title for this holy fu-
 
-print(k_nearest_neighbours(50, joshua, "227", fullset))
+print(k_nearest_neighbours(50, joshua, "508", fullset))
+
+
 j_l = {"38000":10, # Demon slayer
        "20":8, # Naruto
        "40748":7, # Jjk
@@ -189,7 +201,9 @@ def predict(user, content_ids, data, top_x):
     ids = []
     for i in range(1000):
         content = content_ids[i]
-        predictions.append(k_nearest_neighbours(50, user, content, data))
+        prediction = k_nearest_neighbours(50, user, content, data)
+        print(prediction)
+        predictions.append(prediction)
         ids.append(content)
     
     # sort ids by prediction rating in increasing order

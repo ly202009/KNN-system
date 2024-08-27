@@ -21,11 +21,30 @@
 
 import os
 import csv
-file_path = str(os.path.dirname(__file__)) + "/data/user-score-2023.csv"
-with open(file_path, 'rb') as inp:
-    row_count = sum(1 for row in inp)
-    print(row_count)
+file_path = str(os.path.dirname(__file__))
+# with open(file_path, 'rb') as inp:
+#     row_count = sum(1 for row in inp)
+#     print(row_count)
     # writer = csv.writer(out)
     # for row in csv.reader(inp):
     #     if row[2] != "0":
     #         writer.writerow(row)
+
+import os
+with open(file_path + "/data/cleaned-score-2023.txt", 'w') as newcsv:
+    with open(file_path  + "/data/users-score-2023 (2).txt", encoding="utf8") as csvf:
+        i = 0
+        for line in csvf:
+            i+=1
+            # seperate by commo rpartition, tail is int
+            # order is user id, username, anime id, anime name, rating
+            w = line.strip().split(",")
+            if i % 10000 == 0:
+                print(i)
+                print(line)
+            newcsv.write('{}\t{}\t{}\t{}\n'.format(w[0], w[1], w[2], w[len(w)-1]))
+
+print("done cleaning")
+
+# 1291097 users
+# 24325192 lines
