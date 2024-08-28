@@ -56,7 +56,8 @@ for i in anime_ids:
 n.close()
 
 while(True):
-    search = str(input("What would you like to search? (Q to Quit):\n(I for ID)\n(N for Name)\n")).upper()
+    # search = str(input("What would you like to search? (Q to Quit):\n(I for ID)\n(N for Name)\n")).upper()
+    search = "N"
     if(search == "I"):
         search = str(input("What?\n")).upper()
         try:
@@ -77,7 +78,7 @@ while(True):
 
         for i in range(len(sorted_list)):
             index = sorted_list[len(sorted_list)-i-1]
-            print(i+1, ".", anime_ids[index], names[index], english[index], japanese[index], members[index])
+            print(i+1,anime_ids[index], names[index], english[index], japanese[index], members[index], sep=" || ")
         try:
             index = sorted_list[len(sorted_list) - int(input("Which one?\n"))]
             print(anime_ids[index] + "\n" + names[index] + "\n" + scores[index] + "\n" + genres[index] + "\n" + english[index] + "\n" + japanese[index] + "\n" + types[index] + "\n" + members[index])
