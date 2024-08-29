@@ -72,7 +72,7 @@ def create_dataset(data_file, user_id_c, item_id_c, rating_c, max_data_users, sk
     print("Dataset Created")
     return users
 
-def k_nearest_neighbours(k, user, item, data):
+def k_nearest_neighbours(k, user, item, data, min_k):
     """
     To start, we need to consider the overlap of data, which points the user does have, and which they dont
     a good starting ground (for me at least) is at least 10% of the movies our target has rated must have also
@@ -123,27 +123,37 @@ def k_nearest_neighbours(k, user, item, data):
             if(sscores_values[i] == -2):
                 i += 1
                 k += 1
+                min_k += 1
                 continue
             # Total sum of centered similar user scores multiplied by their similarity score as weight
-            # problem: the regular score when averaged then multiplied by similarity 
-            total += (int(data[sscores_keys[i]][item]) - (sum(data[sscores_keys[i]].values())/len(data[sscores_keys[i]]))) * sscores_values[i]
+            #  
+            total += (int(data[sscores_keys[i]][item]) - (sum(data[sscores_keys[i]].values())/len(data[sscores_keys[i]]))) * (sscores_values[i])
             total_sscore += abs(sscores_values[i])
             i += 1
         except:
             print("welp, something broke but it's probably fine (:")
+            if(not i > min_k):
+                return 0
             break
 
     # print(total)
     # print(total_sscore)
+    # for i in users_matched_keys:
+    #     print(users_matched[i][item], similarity_scores[i], (sum(data[i].values())/len(data[i])))
     try:
+        # get the average centered score of all neighbours, weighted by their similarity scores (as a negative similarity score, since the 
+        # rating is centered, it simply will reflect to the other sign, from positive to negative, and vice versa. Then add the users average to
+        # bring the average centered score back to normal score on scale of 1 to 10)
         prediction = total/total_sscore + (sum(user.values())/len(user))
+        # the above method can exceed the limit of 1 to 10, so we will apply a clamp to keep it between a score of 0 to 10 (the 0 is just an assurance to not eliminate 0.5 answers)
+        prediction = max(min(10, prediction), 0) # If prediction smaller than 10, it moves on, and if it's larger than 0, it moves on.
     except:
         return
     return prediction
  
 #hello its me heheheh
 file_path = str(os.path.dirname(__file__)) + "/data/cleaned-score-2023.txt"
-fullset = create_dataset(file_path, 0, 2, 3, 50000, 1)
+fullset = create_dataset(file_path, 0, 2, 3, 10000, 1)
 while True:
     try:
         n = str(input())
@@ -166,7 +176,7 @@ joshua = {"21":1, # One piece
           "28819":10, # My wife is the student council president (wtf josh)
           "8769":10} # I don't even want to write the title for this holy fu-
 
-# print(k_nearest_neighbours(500, joshua, "508", fullset))
+# print(k_nearest_neighbours(50, joshua, "413", fullset))
 # print(k_nearest_neighbours(500, joshua, "40748", fullset))
 
 r_y = {"21":8, # One Piece
@@ -174,9 +184,11 @@ r_y = {"21":8, # One Piece
        "235":7, # Case Closed(conan)
     #    "":8.5, # Solo Levelling (2024 release, not part of dataset unforutnately)
        "5114":10, # FMAB (??? wth is that) ohh fullmetal alch
-       "40478":9, # jjk
+       "40748":9, # jjk
        "38000":9.5, # Demon Slayer
        "9919":8} # Blue Exorcist
+
+print(k_nearest_neighbours(50, r_y, "827", fullset, 25))
 
 e_s = {"1575":10, # Code Geass: Lelouch of the Rebellion
        "2904":10, # Code Geass: Lelouch of the Rebellion R2
@@ -322,10 +334,10 @@ def predict(user, content_ids, data, top_x):
     # been watched by the user, sort the rest by the member count of each
     predictions = []
     ids = []
-    for i in range(24000):
+    for i in range(10000):
         content = content_ids[i]
-        prediction = k_nearest_neighbours(50, user, content, data)
-        print(prediction)
+        prediction = k_nearest_neighbours(50, user, content, data, 25)
+        print(i, ": ",prediction, sep="")
         predictions.append(prediction)
         ids.append(content)
     
@@ -358,10 +370,29 @@ for i in n:
         anime_ids.append(i.replace("\n",""))
 
 
+m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
+m.write("\n\n\n")
 ids, predictions = predict(joshua, anime_ids, fullset, 100)
 for i in range(len(ids)):
     print(ids[i], predictions[i])
+    m.write(str(ids[i]))
+    m.write(" : ")
+    m.write(str(predictions[i]))
+    m.write("\n")
+m.close()
 
-ids, predictions = predict(e_s, anime_ids, fullset, 100)
+m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
+m.write("\n\n\n")
+ids, predictions = predict(r_y, anime_ids, fullset, 100)
 for i in range(len(ids)):
     print(ids[i], predictions[i])
+    m.write(str(ids[i]))
+    m.write(" : ")
+    m.write(str(predictions[i]))
+    m.write("\n")
+m.close()
+
+
+# ids, predictions = predict(e_s, anime_ids, fullset, 100)
+# for i in range(len(ids)):
+#     print(ids[i], predictions[i])
