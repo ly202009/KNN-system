@@ -438,6 +438,7 @@ for i in n:
     if i.replace("\n","").isnumeric() == True:
         anime_ids.append(i.replace("\n",""))
 
+
 m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
 m.write("\n\n\n")
 ids, predictions = predict(j_l, anime_ids, fullset, 100)
@@ -450,6 +451,7 @@ for i in range(len(ids)):
     m.write("\n")
 m.close()
 
+
 m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
 m.write("\n\n\n")
 ids, predictions = predict(joshua, anime_ids, fullset, 100)
@@ -461,6 +463,7 @@ for i in range(len(ids)):
     m.write(str(predictions[i]))
     m.write("\n")
 m.close()
+
 
 m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
 m.write("\n\n\n")
@@ -492,6 +495,58 @@ m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
 m.write("\n\n\n")
 ids, predictions = predict(p_s, anime_ids, fullset, 100)
 m.write("p_s\n")
+for i in range(len(ids)):
+    print(ids[i], predictions[i])
+    m.write(str(ids[i]))
+    m.write(" : ")
+    m.write(str(predictions[i]))
+    m.write("\n")
+m.close()
+
+
+m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
+m.write("\n\n\n")
+ids, predictions = predict(k_m, anime_ids, fullset, 100)
+m.write("k_m\n")
+for i in range(len(ids)):
+    print(ids[i], predictions[i])
+    m.write(str(ids[i]))
+    m.write(" : ")
+    m.write(str(predictions[i]))
+    m.write("\n")
+m.close()
+
+
+m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
+m.write("\n\n\n")
+ids, predictions = predict(a_h, anime_ids, fullset, 100)
+m.write("a_h\n")
+for i in range(len(ids)):
+    print(ids[i], predictions[i])
+    m.write(str(ids[i]))
+    m.write(" : ")
+    m.write(str(predictions[i]))
+    m.write("\n")
+m.close()
+
+
+m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
+m.write("\n\n\n")
+ids, predictions = predict(c_e, anime_ids, fullset, 100)
+m.write("c_e\n")
+for i in range(len(ids)):
+    print(ids[i], predictions[i])
+    m.write(str(ids[i]))
+    m.write(" : ")
+    m.write(str(predictions[i]))
+    m.write("\n")
+m.close()
+
+
+m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
+m.write("\n\n\n")
+ids, predictions = predict(e_s, anime_ids, fullset, 100)
+m.write("e_s\n")
 for i in range(len(ids)):
     print(ids[i], predictions[i])
     m.write(str(ids[i]))
