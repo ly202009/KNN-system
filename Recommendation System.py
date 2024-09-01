@@ -61,41 +61,127 @@ def create_dataset(data_file, user_id_c, item_id_c, rating_c, max_data_users, sk
         line = f[i]
         w = line.split("\t")
         if(w[user_id_c] in users):
-            if(w[rating_c] == '"'):
-                print(w[user_id_c])
-                print(w[item_id_c])
-            users[w[user_id_c]][int(w[item_id_c])] = int(w[rating_c])
+            users[w[user_id_c]][w[item_id_c]] = int(w[rating_c])
         else:
-            users[w[user_id_c]] = {int(w[item_id_c]):int(w[rating_c])}
+            users[w[user_id_c]] = {w[item_id_c]:int(w[rating_c])}
         if(len(users)>=max_data_users):
             break
     print("Dataset Created")
     return users
 
-def ball_tree_algo():
-    print("hello world")
-    # this will group the users into "balls" (heh) and works by forming groups of users. The method this works in is shitty and slow, but it will speed up the algorithm significantly so yay
-    # intake dictionary of dataset and set of average replacements for each axis if value is missing
-    # the user ids are the labels
-    # the item id is the axis
-    # the item value is the coord value
+# def ball_tree_algo():
+#     print("hello world")
+#     # this will group the users into "balls" (heh) and works by forming groups of users. The method this works in is shitty and slow, but it will speed up the algorithm significantly so yay
+#     # intake dictionary of dataset and set of average replacements for each axis if value is missing
+#     # the user ids are the labels
+#     # the item id is the axis
+#     # the item value is the coord value
 
-    # SOME IMPORTANT INFO:
-        # There are 24906 animes, AKA, 24906 axes
-    # okayyyyy so we doin thissssss
-    """
-    1. Pick random point
-        a) we can use the first point in the dataset
-    2. Find point furthest from random point
-        a) Run through the other points and the average replacements set for the axes
-        b) Create arrays for each point with coordinates, checking if the point has provided a coord for each axis, if a coord is missing, it is substituted with the average
-        c) Run euc_dist() on the two arrays, return the distance, then label the distance with the point
-        d) Furthest point is used for the next step
+#     # SOME IMPORTANT INFO:
+#         # There are 24906 animes, AKA, 24906 axes
+#     # okayyyyy so we doin thissssss
+#     """
+#     1. Pick random point
+#         a) we can use the first point in the dataset
+#     2. Find point furthest from random point
+#         a) Run through the other points and the average replacements set for the axes
+#         b) Create arrays for each point with coordinates, checking if the point has provided a coord for each axis, if a coord is missing, it is substituted with the average
+#         c) Run euc_dist() on the two arrays, return the distance, then label the distance with the point
+#         d) Furthest point is used for the next step
         
-    3. Find point furthest from random point's furthest point
-        a) Repeat all of the previous step for the second point to be used
-    4. 
+#     3. Find point furthest from random point's furthest point
+#         a) Repeat all of the previous step for the second point to be used
+#     4. 
+#     """
+
+def k_nearest_neighbours(k, user, item, data, min_k, min_per_item):
     """
+    To start, we need to consider the overlap of data, which points the user does have, and which they dont
+    a good starting ground (for me at least) is at least 10% of the movies our target has rated must have also
+    been rated by whoever we're finding the similarity to, this speeds up data collection a lot already.
+    There's a couple criteria we need to consider when ranking total similarity:
+      1. The pearson score
+      2. The overlapping data
+      3. Each person's regular preferences
+
+    The person also needs to have actually rated the item that is being predicted for already as well.
+    """
+    user_watched = list(user.keys())
+    checked_users = []
+    similarity_scores = {}
+    min_items = math.floor((min_per_item * len(user_watched))) + 1
+    for i in user_watched:
+        # loops thru each user in given data
+        for x in data:
+            # return values of data user, check if the item is watched also, puts it in checked users if not already in and the item being predicted is already in
+            if (i in data[x]) and (item in data[x]):
+                if(x in checked_users):
+                    continue
+                else:
+                    checked_users.append(x)
+                # loop through user, append if both compared and original have watched a show
+                original_user_scores = []
+                compared_user_scores = []
+                for y in user_watched:
+                    if(y in data[x]):
+                        original_user_scores.append(int(user[y]))
+                        # data[x][y] is the item rating present in compared users
+                        compared_user_scores.append(int(data[x][y]))
+                # print("started sim calc")
+                if(len(original_user_scores) < min_items):
+                    continue
+                
+                similarity_scores[x] = len(original_user_scores)/len(user_watched) * pearson_correlation(original_user_scores, compared_user_scores)
+                # print("finished sim calc")
+    
+    if(len(similarity_scores) < min_k):
+        # if the minimum neighbours requirement is not met, the item is dismissed and prediction is impossible
+        print(len(similarity_scores))
+        return 0
+
+    # code i found on stackoverflow for sorting dict by values cause I cannot be assed to do this with more for loops
+    similarity_scores = {k: v for k, v in sorted(similarity_scores.items(), key=lambda item: item[1], reverse=True)}
+    
+    # list of similarity scores
+    sscores_values = list(similarity_scores.values())
+    # list of user ids
+    sscores_keys = list(similarity_scores.keys())
+    total = 0
+    total_sscore = 0
+    i = 0
+    
+    while i < k:
+        # run thru the similarity scores, find that users rating for the item and the score they have, multiply
+        try:
+            if(sscores_values[i] == -2):
+                i += 1
+                k += 1
+                min_k += 1
+                continue
+            # Total sum of centered similar user scores multiplied by their similarity score as weight
+            #  
+            total += (int(data[sscores_keys[i]][item]) - (sum(data[sscores_keys[i]].values())/len(data[sscores_keys[i]]))) * (sscores_values[i])
+            total_sscore += abs(sscores_values[i])
+            i += 1
+        except:
+            print("welp, something broke but it's probably fine (:")
+            break
+
+    # print(total)
+    # print(total_sscore)
+    # for i in users_matched_keys:
+    #     print(users_matched[i][item], similarity_scores[i], (sum(data[i].values())/len(data[i])))
+    try:
+        # get the average centered score of all neighbours, weighted by their similarity scores (as a negative similarity score, since the 
+        # rating is centered, it simply will reflect to the other sign, from positive to negative, and vice versa. Then add the users average to
+        # bring the average centered score back to normal score on scale of 1 to 10)
+        prediction = total/total_sscore + (sum(user.values())/len(user))
+        # the above method can exceed the limit of 1 to 10, so we will apply a clamp to keep it between a score of 0 to 10 (the 0 is just an assurance to not eliminate 0.5 answers)
+        prediction = max(min(10, prediction), 0) # If prediction smaller than 10, it moves on, and if it's larger than 0, it moves on.
+    except:
+        return
+    return prediction
+ 
 
 def predict(user, content_ids, data, top_x):
     # This should be a very simple function that runs KNN on a loop, running thru a list of all content_ids,
@@ -106,7 +192,7 @@ def predict(user, content_ids, data, top_x):
     ids = []
     for i in range(10000):
         content = content_ids[i]
-        prediction = k_nearest_neighbours(50, user, content, data, 25)
+        prediction = k_nearest_neighbours(50, user, content, data, 25, 0.25)
         print(i, ": ",prediction, sep="")
         predictions.append(prediction)
         ids.append(content)
@@ -131,85 +217,7 @@ def predict(user, content_ids, data, top_x):
 
     return ids, predictions
 
-def k_nearest_neighbours(k, user, item, data, min_k):
-    """
-    To start, we need to consider the overlap of data, which points the user does have, and which they dont
-    a good starting ground (for me at least) is at least 10% of the movies our target has rated must have also
-    been rated by whoever we're finding the similarity to, this speeds up data collection a lot already.
-    There's a couple criteria we need to consider when ranking total similarity:
-      1. The pearson score
-      2. The overlapping data
-      3. Each person's regular preferences
 
-    The person also needs to have actually rated the item that is being predicted for already as well.
-    """
-    user_watched = list(user.keys())
-    users_matched = {}
-    for i in range(len(user_watched)):
-        # loops thru each user in given data
-        for x in data:
-            # return keys of data user, check if the item is watched also, puts it in matched users if not already in and the item being predicted is already in
-            if (user_watched[i] in data[x].keys()) and (x not in users_matched) and (item in data[x].keys()):
-                users_matched[x] = data[x]
-    
-    similarity_scores = {}
-    users_matched_keys = list(users_matched.keys())
-    user_keys = list(user.keys())
-    for i in range(len(users_matched_keys)):
-        original_user_scores = []
-        compared_user_scores = []
-        for x in range(len(user_keys)):
-            # if the item id in user is in the users matched values keys, progress
-            if user_keys[x] in users_matched[users_matched_keys[i]]:
-                # get the rating from the user, append, get rating from the user_matched, append
-                original_user_scores.append(int(user[user_keys[x]]))
-                compared_user_scores.append(int(users_matched[users_matched_keys[i]][user_keys[x]]))
-            
-        similarity_scores[users_matched_keys[i]] = len(original_user_scores)/len(user_keys) * pearson_correlation(original_user_scores, compared_user_scores)
-    
-    # code i found on stackoverflow for sorting dict by values cause I cannot be assed to do this with more for loops
-    similarity_scores = {k: v for k, v in sorted(similarity_scores.items(), key=lambda item: item[1], reverse=True)}
-    # list of similarity scores
-    sscores_values = list(similarity_scores.values())
-    # list of user ids
-    sscores_keys = list(similarity_scores.keys())
-    total = 0
-    total_sscore = 0
-    i = 0
-    while i < k:
-        # run thru the similarity scores, find that users rating for the item and the score they have, multiply
-        try:
-            if(sscores_values[i] == -2):
-                i += 1
-                k += 1
-                min_k += 1
-                continue
-            # Total sum of centered similar user scores multiplied by their similarity score as weight
-            #  
-            total += (int(data[sscores_keys[i]][item]) - (sum(data[sscores_keys[i]].values())/len(data[sscores_keys[i]]))) * (sscores_values[i])
-            total_sscore += abs(sscores_values[i])
-            i += 1
-        except:
-            print("welp, something broke but it's probably fine (:")
-            if(not i > min_k):
-                return 0
-            break
-
-    # print(total)
-    # print(total_sscore)
-    # for i in users_matched_keys:
-    #     print(users_matched[i][item], similarity_scores[i], (sum(data[i].values())/len(data[i])))
-    try:
-        # get the average centered score of all neighbours, weighted by their similarity scores (as a negative similarity score, since the 
-        # rating is centered, it simply will reflect to the other sign, from positive to negative, and vice versa. Then add the users average to
-        # bring the average centered score back to normal score on scale of 1 to 10)
-        prediction = total/total_sscore + (sum(user.values())/len(user))
-        # the above method can exceed the limit of 1 to 10, so we will apply a clamp to keep it between a score of 0 to 10 (the 0 is just an assurance to not eliminate 0.5 answers)
-        prediction = max(min(10, prediction), 0) # If prediction smaller than 10, it moves on, and if it's larger than 0, it moves on.
-    except:
-        return
-    return prediction
- 
 #hello its me heheheh
 file_path = str(os.path.dirname(__file__)) + "/data/cleaned-score-2023.txt"
 fullset = create_dataset(file_path, 0, 2, 3, 10000, 1)
@@ -229,7 +237,7 @@ j_l = {"38000":10, # Demon slayer
        "20":8, # Naruto
        "40748":7, # Jjk
        "20583":9} # Haikyuu
-
+print(k_nearest_neighbours(50, j_l, "9969", fullset, 25, 0.25))
 joshua = {"21":1, # One piece
           "40748":1, # jjk
           "28819":10, # My wife is the student council president (wtf josh)
@@ -244,7 +252,7 @@ r_y = {"21":8, # One Piece
        "38000":9.5, # Demon Slayer
        "9919":8} # Blue Exorcist
 
-print(k_nearest_neighbours(50, r_y, "827", fullset, 25))
+# print(k_nearest_neighbours(50, r_y, "827", fullset, 25))
 
 e_s = {"1575":10, # Code Geass: Lelouch of the Rebellion
        "2904":10, # Code Geass: Lelouch of the Rebellion R2
@@ -374,7 +382,7 @@ e_s = {"1575":10, # Code Geass: Lelouch of the Rebellion
        "14835":5, # The Idolm@ster: Shiny Festa
        "41103":4} # Koikimo
 
-p_s = {"30276":8} # Just one punch man bruh patrick wth
+# p_t = {"30276":8} # Just one punch man bruh patrick wth (Can't use this one since the algo requires a minimum of 2 ratings)
 
 k_m = {"30123":7.9, # Snow White with the Red Hair
        "269":8.9, # Bleach
@@ -431,6 +439,7 @@ e_y = {"32281":10, # Your Name
 # Okay cool, lab-rats in, we should make a function called predict():
 
 
+# get a list of ids to cycle through and predict for each, then rank each by predicted rating to get final
 anime_ids = []
 file_path = str(os.path.dirname(__file__))
 n = open(file_path + "/data/anime-ids.txt", 'r', encoding="utf8").readlines()
@@ -439,114 +448,101 @@ for i in n:
         anime_ids.append(i.replace("\n",""))
 
 
-m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
-m.write("\n\n\n")
-ids, predictions = predict(j_l, anime_ids, fullset, 100)
-m.write("j_l\n")
-for i in range(len(ids)):
-    print(ids[i], predictions[i])
-    m.write(str(ids[i]))
-    m.write(" : ")
-    m.write(str(predictions[i]))
-    m.write("\n")
-m.close()
+# m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
+# m.write("\n\n\n")
+# ids, predictions = predict(j_l, anime_ids, fullset, 100)
+# m.write("j_l\n")
+# for i in range(len(ids)):
+#     print(ids[i], predictions[i])
+#     m.write(str(ids[i]))
+#     m.write(" : ")
+#     m.write(str(predictions[i]))
+#     m.write("\n")
+# m.close()
+
+
+# m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
+# m.write("\n\n\n")
+# ids, predictions = predict(joshua, anime_ids, fullset, 100)
+# m.write("joshua\n")
+# for i in range(len(ids)):
+#     print(ids[i], predictions[i])
+#     m.write(str(ids[i]))
+#     m.write(" : ")
+#     m.write(str(predictions[i]))
+#     m.write("\n")
+# m.close()
+
+
+# m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
+# m.write("\n\n\n")
+# ids, predictions = predict(r_y, anime_ids, fullset, 100)
+# m.write("r_y\n")
+# for i in range(len(ids)):
+#     print(ids[i], predictions[i])
+#     m.write(str(ids[i]))
+#     m.write(" : ")
+#     m.write(str(predictions[i]))
+#     m.write("\n")
+# m.close()
+
+
+# m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
+# m.write("\n\n\n")
+# ids, predictions = predict(e_s, anime_ids, fullset, 100)
+# m.write("e_s\n")
+# for i in range(len(ids)):
+#     print(ids[i], predictions[i])
+#     m.write(str(ids[i]))
+#     m.write(" : ")
+#     m.write(str(predictions[i]))
+#     m.write("\n")
+# m.close()
+
+
+# m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
+# m.write("\n\n\n")
+# ids, predictions = predict(k_m, anime_ids, fullset, 100)
+# m.write("k_m\n")
+# for i in range(len(ids)):
+#     print(ids[i], predictions[i])
+#     m.write(str(ids[i]))
+#     m.write(" : ")
+#     m.write(str(predictions[i]))
+#     m.write("\n")
+# m.close()
+
+
+# m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
+# m.write("\n\n\n")
+# ids, predictions = predict(a_h, anime_ids, fullset, 100)
+# m.write("a_h\n")
+# for i in range(len(ids)):
+#     print(ids[i], predictions[i])
+#     m.write(str(ids[i]))
+#     m.write(" : ")
+#     m.write(str(predictions[i]))
+#     m.write("\n")
+# m.close()
+
+
+# m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
+# m.write("\n\n\n")
+# ids, predictions = predict(c_e, anime_ids, fullset, 100)
+# m.write("c_e\n")
+# for i in range(len(ids)):
+#     print(ids[i], predictions[i])
+#     m.write(str(ids[i]))
+#     m.write(" : ")
+#     m.write(str(predictions[i]))
+#     m.write("\n")
+# m.close()
 
 
 m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
 m.write("\n\n\n")
-ids, predictions = predict(joshua, anime_ids, fullset, 100)
-m.write("joshua\n")
-for i in range(len(ids)):
-    print(ids[i], predictions[i])
-    m.write(str(ids[i]))
-    m.write(" : ")
-    m.write(str(predictions[i]))
-    m.write("\n")
-m.close()
-
-
-m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
-m.write("\n\n\n")
-ids, predictions = predict(r_y, anime_ids, fullset, 100)
-m.write("r_y\n")
-for i in range(len(ids)):
-    print(ids[i], predictions[i])
-    m.write(str(ids[i]))
-    m.write(" : ")
-    m.write(str(predictions[i]))
-    m.write("\n")
-m.close()
-
-
-m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
-m.write("\n\n\n")
-ids, predictions = predict(e_s, anime_ids, fullset, 100)
-m.write("e_s\n")
-for i in range(len(ids)):
-    print(ids[i], predictions[i])
-    m.write(str(ids[i]))
-    m.write(" : ")
-    m.write(str(predictions[i]))
-    m.write("\n")
-m.close()
-
-
-m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
-m.write("\n\n\n")
-ids, predictions = predict(p_s, anime_ids, fullset, 100)
-m.write("p_s\n")
-for i in range(len(ids)):
-    print(ids[i], predictions[i])
-    m.write(str(ids[i]))
-    m.write(" : ")
-    m.write(str(predictions[i]))
-    m.write("\n")
-m.close()
-
-
-m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
-m.write("\n\n\n")
-ids, predictions = predict(k_m, anime_ids, fullset, 100)
-m.write("k_m\n")
-for i in range(len(ids)):
-    print(ids[i], predictions[i])
-    m.write(str(ids[i]))
-    m.write(" : ")
-    m.write(str(predictions[i]))
-    m.write("\n")
-m.close()
-
-
-m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
-m.write("\n\n\n")
-ids, predictions = predict(a_h, anime_ids, fullset, 100)
-m.write("a_h\n")
-for i in range(len(ids)):
-    print(ids[i], predictions[i])
-    m.write(str(ids[i]))
-    m.write(" : ")
-    m.write(str(predictions[i]))
-    m.write("\n")
-m.close()
-
-
-m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
-m.write("\n\n\n")
-ids, predictions = predict(c_e, anime_ids, fullset, 100)
-m.write("c_e\n")
-for i in range(len(ids)):
-    print(ids[i], predictions[i])
-    m.write(str(ids[i]))
-    m.write(" : ")
-    m.write(str(predictions[i]))
-    m.write("\n")
-m.close()
-
-
-m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
-m.write("\n\n\n")
-ids, predictions = predict(e_s, anime_ids, fullset, 100)
-m.write("e_s\n")
+ids, predictions = predict(e_y, anime_ids, fullset, 100)
+m.write("e_y\n")
 for i in range(len(ids)):
     print(ids[i], predictions[i])
     m.write(str(ids[i]))

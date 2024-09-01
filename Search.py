@@ -56,8 +56,7 @@ for i in anime_ids:
 n.close()
 
 while(True):
-    # search = str(input("What would you like to search? (Q to Quit):\n(I for ID)\n(N for Name)\n")).upper()
-    search = "N"
+    search = str(input("What would you like to search? (Q to Quit):\n(I for ID)\n(N for Name)\n")).upper()
     if(search == "I"):
         search = str(input("What?\n")).upper()
         try:
