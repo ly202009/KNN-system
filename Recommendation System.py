@@ -64,13 +64,72 @@ def create_dataset(data_file, user_id_c, item_id_c, rating_c, max_data_users, sk
             if(w[rating_c] == '"'):
                 print(w[user_id_c])
                 print(w[item_id_c])
-            users[w[user_id_c]][w[item_id_c]] = int(w[rating_c])
+            users[w[user_id_c]][int(w[item_id_c])] = int(w[rating_c])
         else:
-            users[w[user_id_c]] = {w[item_id_c]:int(w[rating_c])}
+            users[w[user_id_c]] = {int(w[item_id_c]):int(w[rating_c])}
         if(len(users)>=max_data_users):
             break
     print("Dataset Created")
     return users
+
+def ball_tree_algo():
+    print("hello world")
+    # this will group the users into "balls" (heh) and works by forming groups of users. The method this works in is shitty and slow, but it will speed up the algorithm significantly so yay
+    # intake dictionary of dataset and set of average replacements for each axis if value is missing
+    # the user ids are the labels
+    # the item id is the axis
+    # the item value is the coord value
+
+    # SOME IMPORTANT INFO:
+        # There are 24906 animes, AKA, 24906 axes
+    # okayyyyy so we doin thissssss
+    """
+    1. Pick random point
+        a) we can use the first point in the dataset
+    2. Find point furthest from random point
+        a) Run through the other points and the average replacements set for the axes
+        b) Create arrays for each point with coordinates, checking if the point has provided a coord for each axis, if a coord is missing, it is substituted with the average
+        c) Run euc_dist() on the two arrays, return the distance, then label the distance with the point
+        d) Furthest point is used for the next step
+        
+    3. Find point furthest from random point's furthest point
+        a) Repeat all of the previous step for the second point to be used
+    4. 
+    """
+
+def predict(user, content_ids, data, top_x):
+    # This should be a very simple function that runs KNN on a loop, running thru a list of all content_ids,
+    # in this case being anime ids, and predicting with KNN the user's rating for each anime item, adding the 
+    # found score to two arrays matching prediction to id, take the top_x returns, remove any that have already 
+    # been watched by the user, sort the rest by the member count of each
+    predictions = []
+    ids = []
+    for i in range(10000):
+        content = content_ids[i]
+        prediction = k_nearest_neighbours(50, user, content, data, 25)
+        print(i, ": ",prediction, sep="")
+        predictions.append(prediction)
+        ids.append(content)
+    
+    # sort ids by prediction rating in increasing order
+    ids = [x for _,x in sorted(zip(predictions,ids), reverse=True)]
+    predictions = sorted(predictions, reverse=True)
+
+    user_ids = list(user.keys())
+
+    for i in range(len(ids)):
+        # going thru all the ids predicted for, if the id is in user_ids, then remove this item with remove()
+        try:
+            if ids[i] in user_ids:
+                ids.remove(ids[i])
+                predictions.remove(predictions[i])
+        except:
+            print("oh well")
+
+    ids = ids[:top_x]
+    predictions = predictions[:top_x]
+
+    return ids, predictions
 
 def k_nearest_neighbours(k, user, item, data, min_k):
     """
@@ -175,9 +234,6 @@ joshua = {"21":1, # One piece
           "40748":1, # jjk
           "28819":10, # My wife is the student council president (wtf josh)
           "8769":10} # I don't even want to write the title for this holy fu-
-
-# print(k_nearest_neighbours(50, joshua, "413", fullset))
-# print(k_nearest_neighbours(500, joshua, "40748", fullset))
 
 r_y = {"21":8, # One Piece
        "6702":7, # Fairy Tail
@@ -316,50 +372,63 @@ e_s = {"1575":10, # Code Geass: Lelouch of the Rebellion
        "36799":6, # Twittering Birds Never Fly: The Clouds Gather
        "40646":5, # Yes,No, or Maybe?
        "14835":5, # The Idolm@ster: Shiny Festa
-       "41103":4, # Koikimo
-       }
-
-# print(k_nearest_neighbours(500, e_s, "40748", fullset))
+       "41103":4} # Koikimo
 
 p_s = {"30276":8} # Just one punch man bruh patrick wth
 
+k_m = {"30123":7.9, # Snow White with the Red Hair
+       "269":8.9, # Bleach
+       "20":8.6, # Naruto
+       "249":6.8, # Inuyasha
+       "6547":5.7, # Angel Beats!
+       "10087":8, # Fate/Zero
+       "38000":8, # Demon Slayer: Kimetsu No Yaiba
+       "31478":8, # Bungou Stray Dogs
+       "9756":8.7, # Mahou Shouho Madoka Magica
+       "24781":8.6, # Alice In Borderland
+       "28851":8.7} # A Silent Voice
 
-
+a_h = {"1535":9, # Death Note
+       "11061":9, # Hunter X Hunter
+       "31964":7, # My Hero Academia
+       "30":10, # Evangelion
+       "40748":9, # Jujutsu Kaisen
+       "21":7, # One Piece
+       "38000":2, # Demon Slayer
+       "853":8, # Ouran Host Club
+       "34933":6, # Kakegurui
+       "16592":4, # Danganronpa
+       "431":9, # Howl's Moving Castle
+       "2890":9, # Ponyo
+       "199":10, # Spirited Away
+       "4898":4, # Black Butler
+       "44511":8, # Chainsaw Man
+       "52031":3} # Junji Ito Netflix
+       
+c_e = {"199":10, # Spirited Away
+       "2890":9, # Ponyo
+       "523":9, # My Neighbour Totoro
+       "513":8, # Castle in the Sky
+       "512":10, # Kiki's Delivery Service
+       "431":6, # Howl's Moving Castle
+       "1030":1, # Pom Poko
+       "597":2, # The Cat Returns
+       "16592":7, # Danganronpa
+       "50265":9, # Spy x Family
+       "24781":9} # Alice In Borderland
+       
+e_y = {"32281":10, # Your Name
+       "431":9.5, # Howl's Moving Castle
+       "16498":9.5, # Attack On Titan
+       "36699":10, # The Boy and the Heron
+       "50594":9, # Suzume
+       "38000":8, # Demon Slayer
+       "44511":8, # Chainsaw Man
+       "36649":8, # Banana Fish
+       "31478":7, # Bungou Stray Dogs
+       "513":7} # Castle in The Sky
+       
 # Okay cool, lab-rats in, we should make a function called predict():
-
-def predict(user, content_ids, data, top_x):
-    # This should be a very simple function that runs KNN on a loop, running thru a list of all content_ids,
-    # in this case being anime ids, and predicting with KNN the user's rating for each anime item, adding the 
-    # found score to two arrays matching prediction to id, take the top_x returns, remove any that have already 
-    # been watched by the user, sort the rest by the member count of each
-    predictions = []
-    ids = []
-    for i in range(10000):
-        content = content_ids[i]
-        prediction = k_nearest_neighbours(50, user, content, data, 25)
-        print(i, ": ",prediction, sep="")
-        predictions.append(prediction)
-        ids.append(content)
-    
-    # sort ids by prediction rating in increasing order
-    ids = [x for _,x in sorted(zip(predictions,ids), reverse=True)]
-    predictions = sorted(predictions, reverse=True)
-
-    user_ids = list(user.keys())
-
-    for i in range(len(ids)):
-        # going thru all the ids predicted for, if the id is in user_ids, then remove this item with remove()
-        try:
-            if ids[i] in user_ids:
-                ids.remove(ids[i])
-                predictions.remove(predictions[i])
-        except:
-            print("oh well")
-
-    ids = ids[:top_x]
-    predictions = predictions[:top_x]
-
-    return ids, predictions
 
 
 anime_ids = []
@@ -369,10 +438,22 @@ for i in n:
     if i.replace("\n","").isnumeric() == True:
         anime_ids.append(i.replace("\n",""))
 
+m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
+m.write("\n\n\n")
+ids, predictions = predict(j_l, anime_ids, fullset, 100)
+m.write("j_l\n")
+for i in range(len(ids)):
+    print(ids[i], predictions[i])
+    m.write(str(ids[i]))
+    m.write(" : ")
+    m.write(str(predictions[i]))
+    m.write("\n")
+m.close()
 
 m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
 m.write("\n\n\n")
 ids, predictions = predict(joshua, anime_ids, fullset, 100)
+m.write("joshua\n")
 for i in range(len(ids)):
     print(ids[i], predictions[i])
     m.write(str(ids[i]))
@@ -384,6 +465,7 @@ m.close()
 m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
 m.write("\n\n\n")
 ids, predictions = predict(r_y, anime_ids, fullset, 100)
+m.write("r_y\n")
 for i in range(len(ids)):
     print(ids[i], predictions[i])
     m.write(str(ids[i]))
@@ -393,6 +475,27 @@ for i in range(len(ids)):
 m.close()
 
 
-# ids, predictions = predict(e_s, anime_ids, fullset, 100)
-# for i in range(len(ids)):
-#     print(ids[i], predictions[i])
+m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
+m.write("\n\n\n")
+ids, predictions = predict(e_s, anime_ids, fullset, 100)
+m.write("e_s\n")
+for i in range(len(ids)):
+    print(ids[i], predictions[i])
+    m.write(str(ids[i]))
+    m.write(" : ")
+    m.write(str(predictions[i]))
+    m.write("\n")
+m.close()
+
+
+m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
+m.write("\n\n\n")
+ids, predictions = predict(p_s, anime_ids, fullset, 100)
+m.write("p_s\n")
+for i in range(len(ids)):
+    print(ids[i], predictions[i])
+    m.write(str(ids[i]))
+    m.write(" : ")
+    m.write(str(predictions[i]))
+    m.write("\n")
+m.close()

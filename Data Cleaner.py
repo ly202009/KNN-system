@@ -555,7 +555,6 @@ Koikimo
 4 
 """
 # separate into lines by \n
-
 user = user.split("\n")
 # go thru each line in user, if blank, skip, if numeric, add then print
 currentName = ""

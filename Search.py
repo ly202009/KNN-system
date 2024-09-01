@@ -56,8 +56,8 @@ for i in anime_ids:
 n.close()
 
 while(True):
-    search = str(input("What would you like to search? (Q to Quit):\n(I for ID)\n(N for Name)\n")).upper()
-    # search = "N"
+    # search = str(input("What would you like to search? (Q to Quit):\n(I for ID)\n(N for Name)\n")).upper()
+    search = "N"
     if(search == "I"):
         search = str(input("What?\n")).upper()
         try:
@@ -72,7 +72,11 @@ while(True):
         for i in range(len(names)):
             if search in names[i] or search in english[i] or search in japanese[i]:
                 index_list.append(i)
-                members_list.append(int(members[i]))
+                try:
+                    members_list.append(int(members[i]))
+                except:
+                    print("No Input")
+                    break
 
         sorted_list = [x for _,x in sorted(zip(members_list,index_list))]
 

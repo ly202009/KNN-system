@@ -1,7 +1,7 @@
-i = 0
-i += 1
-i%100
-print(i)
+# i = 0
+# i += 1
+# i%100
+# print(i)
 
 # thisdict = {
 #   "user_id":{"a_id":"rating"}
@@ -40,3 +40,9 @@ print(i)
 # print(user)
 # print(pretty_print_dict(user))
 
+class algo():
+    def __init__(self) -> None:
+        pass
+    x = 5
+
+stuff = algo()
