@@ -298,10 +298,10 @@ j_l = {"38000":10, # Demon slayer
        "40748":7, # Jjk
        "20583":9} # Haikyuu
 
-joshua = {"21":1, # One piece
-          "40748":1, # jjk
-          "28819":10, # My wife is the student council president (wtf josh)
-          "8769":10} # I don't even want to write the title for this holy fu-
+j_c = {"21":1, # One piece
+       "40748":1, # jjk
+       "28819":10, # My wife is the student council president (wtf)
+       "8769":10} # I don't even want to write the title for this holy fu-
 
 r_y = {"21":8, # One Piece
        "6702":7, # Fairy Tail
@@ -526,7 +526,7 @@ p_x = {"31478":10, # Bungou Stray Dogs
 print(k_nearest_neighbours(51, j_l, "413", fullset, 25, 0.25))
 print(k_nearest_neighbours(51, a_h, "413", fullset, 25, 0.25))
 
-users = [j_l, joshua, r_y, k_m, a_h, c_e, e_y, r_q, s_l]
+users = [j_l, j_c, r_y, k_m, a_h, c_e, e_y, r_q, s_l]
 # e_s, p_x
 
 # acc, rms = accuracy(users, fullset, 50)
@@ -547,7 +547,7 @@ for i in n:
         anime_ids.append(i.replace("\n",""))
 
 # print(k_nearest_neighbours(50, j_l, "413", fullset, 25, 0.25), " 1")
-# print(k_nearest_neighbours(50, joshua, "413", fullset, 25, 0.25), " 2")
+# print(k_nearest_neighbours(50, j_c, "413", fullset, 25, 0.25), " 2")
 # print(k_nearest_neighbours(50, r_y, "413", fullset, 25, 0.25), " 3")
 # print(k_nearest_neighbours(50, e_s, "413", fullset, 25, 0.25), " 4")
 # print(k_nearest_neighbours(50, k_m, "413", fullset, 25, 0.25), " 5")
@@ -575,8 +575,8 @@ for i in n:
 
 # m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
 # m.write("\n\n\n")
-# ids, predictions = predict(joshua, anime_ids, fullset, 100)
-# m.write("joshua\n")
+# ids, predictions = predict(j_c, anime_ids, fullset, 100)
+# m.write("j_c\n")
 # for i in range(len(ids)):
 #     print(ids[i], predictions[i])
 #     m.write(str(ids[i]))
