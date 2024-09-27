@@ -210,7 +210,6 @@ joshua = {"21":1, # One piece
           "28819":10, # My wife is the student council president (wtf josh)
           "8769":10} # I don't even want to write the title for this holy fu-
 
-print(k_nearest_neighbours(50, joshua, "227", fullset))
 j_l = {"38000":10, # Demon slayer
        "20":8, # Naruto
        "40748":7, # Jjk

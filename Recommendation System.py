@@ -69,30 +69,6 @@ def create_dataset(data_file, user_id_c, item_id_c, rating_c, max_data_users, sk
     print("Dataset Created")
     return users
 
-# def ball_tree_algo():
-#     print("hello world")
-#     # this will group the users into "balls" (heh) and works by forming groups of users. The method this works in is shitty and slow, but it will speed up the algorithm significantly so yay
-#     # intake dictionary of dataset and set of average replacements for each axis if value is missing
-#     # the user ids are the labels
-#     # the item id is the axis
-#     # the item value is the coord value
-
-#     # SOME IMPORTANT INFO:
-#         # There are 24906 animes, AKA, 24906 axes
-#     # okayyyyy so we doin thissssss
-#     """
-#     1. Pick random point
-#         a) we can use the first point in the dataset
-#     2. Find point furthest from random point
-#         a) Run through the other points and the average replacements set for the axes
-#         b) Create arrays for each point with coordinates, checking if the point has provided a coord for each axis, if a coord is missing, it is substituted with the average
-#         c) Run euc_dist() on the two arrays, return the distance, then label the distance with the point
-#         d) Furthest point is used for the next step
-        
-#     3. Find point furthest from random point's furthest point
-#         a) Repeat all of the previous step for the second point to be used
-#     4. 
-#     """
 
 def k_nearest_neighbours(k, user, item, data, min_k, min_per_item):
     """
@@ -135,8 +111,7 @@ def k_nearest_neighbours(k, user, item, data, min_k, min_per_item):
                 # print("finished sim calc")
     
     if(len(similarity_scores) < min_k):
-        # if the minimum neighbours requirement is not met, the item is dismissed and prediction is impossible
-        print(len(similarity_scores))
+        # if the minimum neighbours requirement is not met, the item is dismissed and prediction is considered impossible
         return 0
 
     # code i found on stackoverflow for sorting dict by values cause I cannot be assed to do this with more for loops
@@ -153,22 +128,27 @@ def k_nearest_neighbours(k, user, item, data, min_k, min_per_item):
     while i < k:
         # run thru the similarity scores, find that users rating for the item and the score they have, multiply
         try:
+            # skip to next iteration of while loop, increase k as well, this way this iteration is ignored without impacting the total number of iterations that actually execute its function
             if(sscores_values[i] == -2):
                 i += 1
                 k += 1
-                min_k += 1
                 continue
+            elif(sscores_values[i] <= 0):
+                # if the values become 0 (no association) or negative (opposite association), stop using those values and break
+                break
+
             # Total sum of centered similar user scores multiplied by their similarity score as weight
-            #  
-            total += (int(data[sscores_keys[i]][item]) - (sum(data[sscores_keys[i]].values())/len(data[sscores_keys[i]]))) * (sscores_values[i])
-            total_sscore += abs(sscores_values[i])
+            # print("User ID:", sscores_keys[i], "| Similarity Score:", sscores_values[i], "| Rating:", data[sscores_keys[i]][item])
+            total += (data[sscores_keys[i]][item] - (sum(data[sscores_keys[i]].values())/len(data[sscores_keys[i]]))) * (sscores_values[i])
+            # total += (data[sscores_keys[i]][item]) * (sscores_values[i])
+            total_sscore += sscores_values[i]
             i += 1
         except:
-            print("welp, something broke but it's probably fine (:")
+            # print("welp, something broke but it's probably fine (:")
             break
-
     # print(total)
     # print(total_sscore)
+    
     # for i in users_matched_keys:
     #     print(users_matched[i][item], similarity_scores[i], (sum(data[i].values())/len(data[i])))
     try:
@@ -217,6 +197,86 @@ def predict(user, content_ids, data, top_x):
 
     return ids, predictions
 
+def accuracy(users, data, k):
+    # loop thru users, for each user, remove a single rating and predict for that rating
+    # list the predicted change and the item for which it was listed
+    # users = [{anime:rating, anime:rating},{anime:rating, anime:rating}]
+    predicted_rating = []
+    actual_rating = []
+    for user_set in users:
+        for key in user_set:
+            # append the actual rating
+            try:
+                rating = user_set[key]
+                actual_rating.append(rating)
+
+                # creating a temp_user dictionary, delete the entry from temp_user that says the rating for the item being predicted for
+                temp_user = user_set.copy()
+                temp_user.pop(key)
+
+                # append to predicted_rating the predicted score using temp_user
+                predicted_rating.append(k_nearest_neighbours(k, temp_user, key, data, 25, 0.25))
+            except:
+                print(key)
+                print(user_set)
+    
+    total = 0
+    total_rms = 0
+    for i in range(len(actual_rating)):
+        total += abs(actual_rating[i] - predicted_rating[i])
+        total_rms += (actual_rating[i] - predicted_rating[i])**2
+    
+    try:
+        avg = total/len(actual_rating)
+        rms_avg = math.sqrt(total_rms/len(actual_rating))
+        return avg, rms_avg
+    except:
+        print("No users found")
+            
+def best_params(init_k, trainset, testset):
+    current_k = init_k
+    print(current_k)
+    # check above and below current_k, compare the returned RMSE values, continue on the lower one
+    rmse = accuracy(trainset, testset, init_k)[1]
+    print(current_k)
+    decreased_k_rmse = accuracy(trainset, testset, init_k-1)[1]
+    increased_k_rmse = accuracy(trainset, testset, init_k+1)[1]
+    print("Decreased: ", decreased_k_rmse)
+    print("Increased: ", increased_k_rmse)
+    if((decreased_k_rmse >= rmse) and (increased_k_rmse >= rmse)):
+        print("returned first value")
+        return current_k, rmse
+    elif(decreased_k_rmse < increased_k_rmse):
+        current_k -= 1
+        best_rmse = decreased_k_rmse
+        
+        # set best_rmse to the best score gotten
+        # find decreased rmse by keep going down, if the next one lower still has a better rmse, minus one from current_k        
+        while(True):
+            print(best_rmse, ' ', current_k)
+            decreased_k_rmse = accuracy(trainset, testset, current_k-1)[1]
+            print(decreased_k_rmse)
+            if(decreased_k_rmse < best_rmse):
+                current_k -= 1
+                best_rmse = decreased_k_rmse
+            else:
+                break
+    else:
+        current_k += 1
+        best_rmse = increased_k_rmse
+        
+        while(True):
+            print(best_rmse, ' ', current_k)
+            increased_k_rmse = accuracy(trainset, testset, current_k+1)[1]
+            print(increased_k_rmse)
+            if(increased_k_rmse < best_rmse):
+                current_k += 1
+                best_rmse = increased_k_rmse
+            else:
+                break
+
+    return current_k, best_rmse
+
 
 #hello its me heheheh
 file_path = str(os.path.dirname(__file__)) + "/data/cleaned-score-2023.txt"
@@ -237,7 +297,7 @@ j_l = {"38000":10, # Demon slayer
        "20":8, # Naruto
        "40748":7, # Jjk
        "20583":9} # Haikyuu
-print(k_nearest_neighbours(50, j_l, "9969", fullset, 25, 0.25))
+
 joshua = {"21":1, # One piece
           "40748":1, # jjk
           "28819":10, # My wife is the student council president (wtf josh)
@@ -251,8 +311,6 @@ r_y = {"21":8, # One Piece
        "40748":9, # jjk
        "38000":9.5, # Demon Slayer
        "9919":8} # Blue Exorcist
-
-# print(k_nearest_neighbours(50, r_y, "827", fullset, 25))
 
 e_s = {"1575":10, # Code Geass: Lelouch of the Rebellion
        "2904":10, # Code Geass: Lelouch of the Rebellion R2
@@ -382,8 +440,6 @@ e_s = {"1575":10, # Code Geass: Lelouch of the Rebellion
        "14835":5, # The Idolm@ster: Shiny Festa
        "41103":4} # Koikimo
 
-# p_t = {"30276":8} # Just one punch man bruh patrick wth (Can't use this one since the algo requires a minimum of 2 ratings)
-
 k_m = {"30123":7.9, # Snow White with the Red Hair
        "269":8.9, # Bleach
        "20":8.6, # Naruto
@@ -435,7 +491,50 @@ e_y = {"32281":10, # Your Name
        "36649":8, # Banana Fish
        "31478":7, # Bungou Stray Dogs
        "513":7} # Castle in The Sky
-       
+
+r_q = {"52991":9, # Frieren
+       "199":9, # Spirited Away
+       "47917":9, # Bocchi the Rock
+       "16662":8, # The Wind Rises
+       "38826":8, # Weathering with You
+       "53876":7, # Pokemon Horizons
+       "11757":3} # Sword Art Online
+    #    "":3 # Legend of Korra Season 2 (Unfortunately is technically american, not listed as anime)
+
+s_l = {"14719":7, # Jojo's Bizarre Adventure
+       "1535":8, # Death Note
+       "38409":7, # Scissor Seven
+       "22535":9, # Parasyte - The Maxim
+       "20583":7, # Haikyuu
+       "49596":7, # Blue Lock
+       "11771":6, # Kuroko no Basket
+       "38000":7} # Demon Slayer
+
+p_x = {"31478":10, # Bungou Stray Dogs
+       "11757":10, # Sword Art Online
+       "35994":9, # Angels of Death
+       "34572":10, # Black Clover
+    #    "20583":11, # Haikyuu (He gave an 11. You can't do that, but my morbid curiosity has allowed it)
+       "20583":10, # Haikyuu (Again, the line above was ran once, this new line corrects the rating from 11 to 10 to see difference in results)
+       "42897":10, # Horimiya
+       "35849":10, # Darling in The Franxx (Was originally 10000 but that would instantly break the system and basically set him near the furthest possible angle from all other points)
+       "10588":8, # Persona
+       "38000":10, # Demon Slayer
+       "50709":10} # Lycoris Recoil
+    #    "":11} # Wistoria: Wand and Sword (Came out in 2024 sorry not in dataset)
+
+print(k_nearest_neighbours(51, j_l, "413", fullset, 25, 0.25))
+print(k_nearest_neighbours(51, a_h, "413", fullset, 25, 0.25))
+
+users = [j_l, joshua, r_y, k_m, a_h, c_e, e_y, r_q, s_l]
+# e_s, p_x
+
+# acc, rms = accuracy(users, fullset, 50)
+# print("The average accuracy is: ", acc, "\n", "RMSE: ", rms)
+
+# best_k, best_rmse = best_params(50, users, fullset)
+# print("Optimal k: ", best_k, "\nBest RMSE:", best_rmse)
+
 # Okay cool, lab-rats in, we should make a function called predict():
 
 
@@ -446,6 +545,19 @@ n = open(file_path + "/data/anime-ids.txt", 'r', encoding="utf8").readlines()
 for i in n:
     if i.replace("\n","").isnumeric() == True:
         anime_ids.append(i.replace("\n",""))
+
+# print(k_nearest_neighbours(50, j_l, "413", fullset, 25, 0.25), " 1")
+# print(k_nearest_neighbours(50, joshua, "413", fullset, 25, 0.25), " 2")
+# print(k_nearest_neighbours(50, r_y, "413", fullset, 25, 0.25), " 3")
+# print(k_nearest_neighbours(50, e_s, "413", fullset, 25, 0.25), " 4")
+# print(k_nearest_neighbours(50, k_m, "413", fullset, 25, 0.25), " 5")
+# print(k_nearest_neighbours(50, a_h, "413", fullset, 25, 0.25), " 6")
+# print(k_nearest_neighbours(50, c_e, "413", fullset, 25, 0.25), " 7")
+# print(k_nearest_neighbours(50, e_y, "413", fullset, 25, 0.25), " 8")
+# print(k_nearest_neighbours(50, r_q, "413", fullset, 25, 0.25), " 9")
+# print(k_nearest_neighbours(50, s_l, "413", fullset, 25, 0.25), " 10")
+# print(k_nearest_neighbours(50, p_x, "413", fullset, 25, 0.25), " 11")
+
 
 
 # m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
@@ -539,14 +651,63 @@ for i in n:
 # m.close()
 
 
-m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
-m.write("\n\n\n")
-ids, predictions = predict(e_y, anime_ids, fullset, 100)
-m.write("e_y\n")
-for i in range(len(ids)):
-    print(ids[i], predictions[i])
-    m.write(str(ids[i]))
-    m.write(" : ")
-    m.write(str(predictions[i]))
-    m.write("\n")
-m.close()
+# m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
+# m.write("\n\n\n")
+# ids, predictions = predict(e_y, anime_ids, fullset, 100)
+# m.write("e_y\n")
+# for i in range(len(ids)):
+#     print(ids[i], predictions[i])
+#     m.write(str(ids[i]))
+#     m.write(" : ")
+#     m.write(str(predictions[i]))
+#     m.write("\n")
+# m.close()
+
+# m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
+# m.write("\n\n\n")
+# ids, predictions = predict(r_q, anime_ids, fullset, 100)
+# m.write("r_q\n")
+# for i in range(len(ids)):
+#     print(ids[i], predictions[i])
+#     m.write(str(ids[i]))
+#     m.write(" : ")
+#     m.write(str(predictions[i]))
+#     m.write("\n")
+# m.close()
+
+# m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
+# m.write("\n\n\n")
+# ids, predictions = predict(s_l, anime_ids, fullset, 100)
+# m.write("s_l\n")
+# for i in range(len(ids)):
+#     print(ids[i], predictions[i])
+#     m.write(str(ids[i]))
+#     m.write(" : ")
+#     m.write(str(predictions[i]))
+#     m.write("\n")
+# m.close()
+
+# m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
+# m.write("\n\n\n")
+# ids, predictions = predict(p_x, anime_ids, fullset, 100)
+# m.write("p_x\n")
+# for i in range(len(ids)):
+#     print(ids[i], predictions[i])
+#     m.write(str(ids[i]))
+#     m.write(" : ")
+#     m.write(str(predictions[i]))
+#     m.write("\n")
+# m.close()
+
+
+# 9989 : 10 anohana
+# 9941 : 10 Tiger & Bunny
+# 9936 : 10 Maken-Ki!
+# 9925 : 10 Amagi SS: Little Sister
+# 9911 : 10 Wish Upon The Pleiades
+
+# 9989 : 10 Anohana
+# 9969 : 10 Gintama SE 2
+# 996 : 10 Sailor Moon Sailor Stars
+# 995 : 10 Prince of Tennis: National Championship Chapter
+# 9941 : 10 Tiger & Bunny
