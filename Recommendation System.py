@@ -24,7 +24,7 @@ The expected output should show that users A and C have the smallest distance an
 Now with another set of users, same rules, more movies.
 """
 
-def pearson_correlation(user1, user2):
+def centered_cosine_similarity(user1, user2):
     user1avg=sum(user1)/len(user1)
     user2avg=sum(user2)/len(user2)
     for i in range(len(user1)):
@@ -70,13 +70,13 @@ def create_dataset(data_file, user_id_c, item_id_c, rating_c, max_data_users, sk
     return users
 
 
-def k_nearest_neighbours(k, user, item, data, min_k, min_per_item):
+def k_nearest_neighbours(k, user, item, data, min_k, min_common_items):
     """
     To start, we need to consider the overlap of data, which points the user does have, and which they dont
     a good starting ground (for me at least) is at least 10% of the movies our target has rated must have also
     been rated by whoever we're finding the similarity to, this speeds up data collection a lot already.
     There's a couple criteria we need to consider when ranking total similarity:
-      1. The pearson score
+      1. The centered_cosine_similarity score
       2. The overlapping data
       3. Each person's regular preferences
 
@@ -85,7 +85,6 @@ def k_nearest_neighbours(k, user, item, data, min_k, min_per_item):
     user_watched = list(user.keys())
     checked_users = []
     similarity_scores = {}
-    min_items = math.floor((min_per_item * len(user_watched))) + 1
     for i in user_watched:
         # loops thru each user in given data
         for x in data:
@@ -104,10 +103,10 @@ def k_nearest_neighbours(k, user, item, data, min_k, min_per_item):
                         # data[x][y] is the item rating present in compared users
                         compared_user_scores.append(int(data[x][y]))
                 # print("started sim calc")
-                if(len(original_user_scores) < min_items):
+                if(len(original_user_scores) < min_common_items):
                     continue
                 
-                similarity_scores[x] = len(original_user_scores)/len(user_watched) * pearson_correlation(original_user_scores, compared_user_scores)
+                similarity_scores[x] = len(original_user_scores)/len(user_watched) * centered_cosine_similarity(original_user_scores, compared_user_scores)
                 # print("finished sim calc")
     
     if(len(similarity_scores) < min_k):
@@ -157,7 +156,7 @@ def k_nearest_neighbours(k, user, item, data, min_k, min_per_item):
         # bring the average centered score back to normal score on scale of 1 to 10)
         prediction = total/total_sscore + (sum(user.values())/len(user))
         # the above method can exceed the limit of 1 to 10, so we will apply a clamp to keep it between a score of 0 to 10 (the 0 is just an assurance to not eliminate 0.5 answers)
-        prediction = max(min(10, prediction), 0) # If prediction smaller than 10, it moves on, and if it's larger than 0, it moves on.
+        # prediction = max(min(10, prediction), 0) # If prediction smaller than 10, it moves on, and if it's larger than 0, it moves on.
     except:
         return
     return prediction
@@ -170,10 +169,11 @@ def predict(user, content_ids, data, top_x):
     # been watched by the user, sort the rest by the member count of each
     predictions = []
     ids = []
-    for i in range(10000):
+    for i in range(len(content_ids)):
         content = content_ids[i]
-        prediction = k_nearest_neighbours(50, user, content, data, 25, 0.25)
-        print(i, ": ",prediction, sep="")
+        prediction = k_nearest_neighbours(50, user, content, data, 25, 3)
+        if(i%100 == 0):
+            print(i, ": ",prediction, sep="")
         predictions.append(prediction)
         ids.append(content)
     
@@ -215,7 +215,7 @@ def accuracy(users, data, k):
                 temp_user.pop(key)
 
                 # append to predicted_rating the predicted score using temp_user
-                predicted_rating.append(k_nearest_neighbours(k, temp_user, key, data, 25, 0.25))
+                predicted_rating.append(k_nearest_neighbours(k, temp_user, key, data, 25, 3))
             except:
                 print(key)
                 print(user_set)
@@ -234,48 +234,40 @@ def accuracy(users, data, k):
         print("No users found")
             
 def best_params(init_k, trainset, testset):
-    current_k = init_k
-    print(current_k)
-    # check above and below current_k, compare the returned RMSE values, continue on the lower one
+    variation = 1
+    # check above and below current_k, continue to do so until both cannot beat the previous best from their sector.
     rmse = accuracy(trainset, testset, init_k)[1]
-    print(current_k)
-    decreased_k_rmse = accuracy(trainset, testset, init_k-1)[1]
-    increased_k_rmse = accuracy(trainset, testset, init_k+1)[1]
+    decreased_k_rmse = accuracy(trainset, testset, init_k-variation)[1]
+    increased_k_rmse = accuracy(trainset, testset, init_k+variation)[1]
     print("Decreased: ", decreased_k_rmse)
     print("Increased: ", increased_k_rmse)
+    
     if((decreased_k_rmse >= rmse) and (increased_k_rmse >= rmse)):
-        print("returned first value")
-        return current_k, rmse
-    elif(decreased_k_rmse < increased_k_rmse):
-        current_k -= 1
-        best_rmse = decreased_k_rmse
+        print("Returned first value")
+        return init_k, rmse
+    
+    else:
+        best_lowered_rmse = decreased_k_rmse
+        best_raised_rmse = increased_k_rmse
         
         # set best_rmse to the best score gotten
         # find decreased rmse by keep going down, if the next one lower still has a better rmse, minus one from current_k        
-        while(True):
-            print(best_rmse, ' ', current_k)
-            decreased_k_rmse = accuracy(trainset, testset, current_k-1)[1]
-            print(decreased_k_rmse)
-            if(decreased_k_rmse < best_rmse):
-                current_k -= 1
-                best_rmse = decreased_k_rmse
-            else:
-                break
+        while(decreased_k_rmse < decreased_k_rmse or increased_k_rmse < increased_k_rmse):
+            
+            decreased_k_rmse = accuracy(trainset, testset, init_k-variation)[1]
+            print("Decreased K: ", decreased_k_rmse)
+            if(decreased_k_rmse < best_lowered_rmse):
+                best_lowered_rmse = decreased_k_rmse
+            
+            increased_k_rmse = accuracy(trainset, testset, init_k+variation)[1]
+            print("Increased K: ", increased_k_rmse)
+            if(increased_k_rmse < best_raised_rmse):
+                best_raised_rmse = increased_k_rmse
+    
+    if(best_lowered_rmse > best_raised_rmse):
+        return init_k+variation, best_raised_rmse
     else:
-        current_k += 1
-        best_rmse = increased_k_rmse
-        
-        while(True):
-            print(best_rmse, ' ', current_k)
-            increased_k_rmse = accuracy(trainset, testset, current_k+1)[1]
-            print(increased_k_rmse)
-            if(increased_k_rmse < best_rmse):
-                current_k += 1
-                best_rmse = increased_k_rmse
-            else:
-                break
-
-    return current_k, best_rmse
+        return init_k-variation, best_lowered_rmse
 
 
 #hello its me heheheh
@@ -290,7 +282,6 @@ while True:
     except:
         print("NOT FOUND!\n")
         continue
-
 
 
 j_l = {"38000":10, # Demon slayer
@@ -523,16 +514,22 @@ p_x = {"31478":10, # Bungou Stray Dogs
        "50709":10} # Lycoris Recoil
     #    "":11} # Wistoria: Wand and Sword (Came out in 2024 sorry not in dataset)
 
-print(k_nearest_neighbours(51, j_l, "413", fullset, 25, 0.25))
-print(k_nearest_neighbours(51, a_h, "413", fullset, 25, 0.25))
+# print(k_nearest_neighbours(125, j_l, "413", fullset, 25, 3))
+# print(k_nearest_neighbours(125, a_h, "413", fullset, 25, 3))
+# print(k_nearest_neighbours(125, j_c, "413", fullset, 25, 3))
 
 users = [j_l, j_c, r_y, k_m, a_h, c_e, e_y, r_q, s_l]
 # e_s, p_x
 
-# acc, rms = accuracy(users, fullset, 50)
-# print("The average accuracy is: ", acc, "\n", "RMSE: ", rms)
+# for i in range(102, 1000, 2):
+#     acc, rms = accuracy(users, fullset, i)
+#     print(i,"\t", acc, "\t", rms)
 
-# best_k, best_rmse = best_params(50, users, fullset)
+# acc, rms = accuracy(users, fullset, 1000)
+# 1 2   3
+# print("The average accuracy is: ", acc, "\nRMSE: ", rms)
+
+# best_k, best_rmse = best_params(300, users, fullset)
 # print("Optimal k: ", best_k, "\nBest RMSE:", best_rmse)
 
 # Okay cool, lab-rats in, we should make a function called predict():
@@ -546,168 +543,157 @@ for i in n:
     if i.replace("\n","").isnumeric() == True:
         anime_ids.append(i.replace("\n",""))
 
-# print(k_nearest_neighbours(50, j_l, "413", fullset, 25, 0.25), " 1")
-# print(k_nearest_neighbours(50, j_c, "413", fullset, 25, 0.25), " 2")
-# print(k_nearest_neighbours(50, r_y, "413", fullset, 25, 0.25), " 3")
-# print(k_nearest_neighbours(50, e_s, "413", fullset, 25, 0.25), " 4")
-# print(k_nearest_neighbours(50, k_m, "413", fullset, 25, 0.25), " 5")
-# print(k_nearest_neighbours(50, a_h, "413", fullset, 25, 0.25), " 6")
-# print(k_nearest_neighbours(50, c_e, "413", fullset, 25, 0.25), " 7")
-# print(k_nearest_neighbours(50, e_y, "413", fullset, 25, 0.25), " 8")
-# print(k_nearest_neighbours(50, r_q, "413", fullset, 25, 0.25), " 9")
-# print(k_nearest_neighbours(50, s_l, "413", fullset, 25, 0.25), " 10")
-# print(k_nearest_neighbours(50, p_x, "413", fullset, 25, 0.25), " 11")
+print(len(anime_ids))
+
+# print(k_nearest_neighbours(50, j_l, "413", fullset, 25, 3), " 1")
+# print(k_nearest_neighbours(50, j_c, "413", fullset, 25, 3), " 2")
+# print(k_nearest_neighbours(50, r_y, "413", fullset, 25, 3), " 3")
+# print(k_nearest_neighbours(50, e_s, "413", fullset, 25, 3), " 4")
+# print(k_nearest_neighbours(50, k_m, "413", fullset, 25, 3), " 5")
+# print(k_nearest_neighbours(50, a_h, "413", fullset, 25, 3), " 6")
+# print(k_nearest_neighbours(50, c_e, "413", fullset, 25, 3), " 7")
+# print(k_nearest_neighbours(50, e_y, "413", fullset, 25, 3), " 8")
+# print(k_nearest_neighbours(50, r_q, "413", fullset, 25, 3), " 9")
+# print(k_nearest_neighbours(50, s_l, "413", fullset, 25, 3), " 10")
+# print(k_nearest_neighbours(50, p_x, "413", fullset, 25, 3), " 11")
 
 
 
-# m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
-# m.write("\n\n\n")
-# ids, predictions = predict(j_l, anime_ids, fullset, 100)
-# m.write("j_l\n")
-# for i in range(len(ids)):
-#     print(ids[i], predictions[i])
-#     m.write(str(ids[i]))
-#     m.write(" : ")
-#     m.write(str(predictions[i]))
-#     m.write("\n")
-# m.close()
+m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
+m.write("\n\n\n")
+ids, predictions = predict(j_l, anime_ids, fullset, 100)
+m.write("j_l\n")
+for i in range(len(ids)):
+    print(ids[i], predictions[i])
+    m.write(str(ids[i]))
+    m.write(" : ")
+    m.write(str(predictions[i]))
+    m.write("\n")
+m.close()
 
 
-# m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
-# m.write("\n\n\n")
-# ids, predictions = predict(j_c, anime_ids, fullset, 100)
-# m.write("j_c\n")
-# for i in range(len(ids)):
-#     print(ids[i], predictions[i])
-#     m.write(str(ids[i]))
-#     m.write(" : ")
-#     m.write(str(predictions[i]))
-#     m.write("\n")
-# m.close()
+m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
+m.write("\n\n\n")
+ids, predictions = predict(j_c, anime_ids, fullset, 100)
+m.write("j_c\n")
+for i in range(len(ids)):
+    print(ids[i], predictions[i])
+    m.write(str(ids[i]))
+    m.write(" : ")
+    m.write(str(predictions[i]))
+    m.write("\n")
+m.close()
 
 
-# m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
-# m.write("\n\n\n")
-# ids, predictions = predict(r_y, anime_ids, fullset, 100)
-# m.write("r_y\n")
-# for i in range(len(ids)):
-#     print(ids[i], predictions[i])
-#     m.write(str(ids[i]))
-#     m.write(" : ")
-#     m.write(str(predictions[i]))
-#     m.write("\n")
-# m.close()
+m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
+m.write("\n\n\n")
+ids, predictions = predict(r_y, anime_ids, fullset, 100)
+m.write("r_y\n")
+for i in range(len(ids)):
+    print(ids[i], predictions[i])
+    m.write(str(ids[i]))
+    m.write(" : ")
+    m.write(str(predictions[i]))
+    m.write("\n")
+m.close()
 
 
-# m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
-# m.write("\n\n\n")
-# ids, predictions = predict(e_s, anime_ids, fullset, 100)
-# m.write("e_s\n")
-# for i in range(len(ids)):
-#     print(ids[i], predictions[i])
-#     m.write(str(ids[i]))
-#     m.write(" : ")
-#     m.write(str(predictions[i]))
-#     m.write("\n")
-# m.close()
+m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
+m.write("\n\n\n")
+ids, predictions = predict(e_s, anime_ids, fullset, 100)
+m.write("e_s\n")
+for i in range(len(ids)):
+    print(ids[i], predictions[i])
+    m.write(str(ids[i]))
+    m.write(" : ")
+    m.write(str(predictions[i]))
+    m.write("\n")
+m.close()
 
 
-# m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
-# m.write("\n\n\n")
-# ids, predictions = predict(k_m, anime_ids, fullset, 100)
-# m.write("k_m\n")
-# for i in range(len(ids)):
-#     print(ids[i], predictions[i])
-#     m.write(str(ids[i]))
-#     m.write(" : ")
-#     m.write(str(predictions[i]))
-#     m.write("\n")
-# m.close()
+m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
+m.write("\n\n\n")
+ids, predictions = predict(k_m, anime_ids, fullset, 100)
+m.write("k_m\n")
+for i in range(len(ids)):
+    print(ids[i], predictions[i])
+    m.write(str(ids[i]))
+    m.write(" : ")
+    m.write(str(predictions[i]))
+    m.write("\n")
+m.close()
 
 
-# m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
-# m.write("\n\n\n")
-# ids, predictions = predict(a_h, anime_ids, fullset, 100)
-# m.write("a_h\n")
-# for i in range(len(ids)):
-#     print(ids[i], predictions[i])
-#     m.write(str(ids[i]))
-#     m.write(" : ")
-#     m.write(str(predictions[i]))
-#     m.write("\n")
-# m.close()
+m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
+m.write("\n\n\n")
+ids, predictions = predict(a_h, anime_ids, fullset, 100)
+m.write("a_h\n")
+for i in range(len(ids)):
+    print(ids[i], predictions[i])
+    m.write(str(ids[i]))
+    m.write(" : ")
+    m.write(str(predictions[i]))
+    m.write("\n")
+m.close()
 
 
-# m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
-# m.write("\n\n\n")
-# ids, predictions = predict(c_e, anime_ids, fullset, 100)
-# m.write("c_e\n")
-# for i in range(len(ids)):
-#     print(ids[i], predictions[i])
-#     m.write(str(ids[i]))
-#     m.write(" : ")
-#     m.write(str(predictions[i]))
-#     m.write("\n")
-# m.close()
+m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
+m.write("\n\n\n")
+ids, predictions = predict(c_e, anime_ids, fullset, 100)
+m.write("c_e\n")
+for i in range(len(ids)):
+    print(ids[i], predictions[i])
+    m.write(str(ids[i]))
+    m.write(" : ")
+    m.write(str(predictions[i]))
+    m.write("\n")
+m.close()
 
 
-# m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
-# m.write("\n\n\n")
-# ids, predictions = predict(e_y, anime_ids, fullset, 100)
-# m.write("e_y\n")
-# for i in range(len(ids)):
-#     print(ids[i], predictions[i])
-#     m.write(str(ids[i]))
-#     m.write(" : ")
-#     m.write(str(predictions[i]))
-#     m.write("\n")
-# m.close()
+m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
+m.write("\n\n\n")
+ids, predictions = predict(e_y, anime_ids, fullset, 100)
+m.write("e_y\n")
+for i in range(len(ids)):
+    print(ids[i], predictions[i])
+    m.write(str(ids[i]))
+    m.write(" : ")
+    m.write(str(predictions[i]))
+    m.write("\n")
+m.close()
 
-# m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
-# m.write("\n\n\n")
-# ids, predictions = predict(r_q, anime_ids, fullset, 100)
-# m.write("r_q\n")
-# for i in range(len(ids)):
-#     print(ids[i], predictions[i])
-#     m.write(str(ids[i]))
-#     m.write(" : ")
-#     m.write(str(predictions[i]))
-#     m.write("\n")
-# m.close()
+m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
+m.write("\n\n\n")
+ids, predictions = predict(r_q, anime_ids, fullset, 100)
+m.write("r_q\n")
+for i in range(len(ids)):
+    print(ids[i], predictions[i])
+    m.write(str(ids[i]))
+    m.write(" : ")
+    m.write(str(predictions[i]))
+    m.write("\n")
+m.close()
 
-# m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
-# m.write("\n\n\n")
-# ids, predictions = predict(s_l, anime_ids, fullset, 100)
-# m.write("s_l\n")
-# for i in range(len(ids)):
-#     print(ids[i], predictions[i])
-#     m.write(str(ids[i]))
-#     m.write(" : ")
-#     m.write(str(predictions[i]))
-#     m.write("\n")
-# m.close()
+m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
+m.write("\n\n\n")
+ids, predictions = predict(s_l, anime_ids, fullset, 100)
+m.write("s_l\n")
+for i in range(len(ids)):
+    print(ids[i], predictions[i])
+    m.write(str(ids[i]))
+    m.write(" : ")
+    m.write(str(predictions[i]))
+    m.write("\n")
+m.close()
 
-# m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
-# m.write("\n\n\n")
-# ids, predictions = predict(p_x, anime_ids, fullset, 100)
-# m.write("p_x\n")
-# for i in range(len(ids)):
-#     print(ids[i], predictions[i])
-#     m.write(str(ids[i]))
-#     m.write(" : ")
-#     m.write(str(predictions[i]))
-#     m.write("\n")
-# m.close()
-
-
-# 9989 : 10 anohana
-# 9941 : 10 Tiger & Bunny
-# 9936 : 10 Maken-Ki!
-# 9925 : 10 Amagi SS: Little Sister
-# 9911 : 10 Wish Upon The Pleiades
-
-# 9989 : 10 Anohana
-# 9969 : 10 Gintama SE 2
-# 996 : 10 Sailor Moon Sailor Stars
-# 995 : 10 Prince of Tennis: National Championship Chapter
-# 9941 : 10 Tiger & Bunny
+m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
+m.write("\n\n\n")
+ids, predictions = predict(p_x, anime_ids, fullset, 100)
+m.write("p_x\n")
+for i in range(len(ids)):
+    print(ids[i], predictions[i])
+    m.write(str(ids[i]))
+    m.write(" : ")
+    m.write(str(predictions[i]))
+    m.write("\n")
+m.close()
