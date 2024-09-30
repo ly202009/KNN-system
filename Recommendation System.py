@@ -158,7 +158,8 @@ def k_nearest_neighbours(k, user, item, data, min_k, min_common_items):
         # the above method can exceed the limit of 1 to 10, so we will apply a clamp to keep it between a score of 0 to 10 (the 0 is just an assurance to not eliminate 0.5 answers)
         # prediction = max(min(10, prediction), 0) # If prediction smaller than 10, it moves on, and if it's larger than 0, it moves on.
     except:
-        return
+        return 0
+    
     return prediction
  
 
@@ -176,21 +177,17 @@ def predict(user, content_ids, data, top_x):
             print(i, ": ",prediction, sep="")
         predictions.append(prediction)
         ids.append(content)
-    
-    # sort ids by prediction rating in increasing order
-    ids = [x for _,x in sorted(zip(predictions,ids), reverse=True)]
-    predictions = sorted(predictions, reverse=True)
 
     user_ids = list(user.keys())
 
     for i in range(len(ids)):
-        # going thru all the ids predicted for, if the id is in user_ids, then remove this item with remove()
-        try:
-            if ids[i] in user_ids:
-                ids.remove(ids[i])
-                predictions.remove(predictions[i])
-        except:
-            print("oh well")
+        # going thru all the ids predicted for, if the id is in user_ids, then set the score of the item to 0 to make it irrelevant
+        if ids[i] in user_ids:
+            predictions[i] = -1
+
+    # sort ids by prediction rating in increasing order
+    ids = [x for _,x in sorted(zip(predictions,ids), reverse=True)]
+    predictions = sorted(predictions, reverse=True)
 
     ids = ids[:top_x]
     predictions = predictions[:top_x]
@@ -271,8 +268,8 @@ def best_params(init_k, trainset, testset):
 
 
 #hello its me heheheh
-file_path = str(os.path.dirname(__file__)) + "/data/cleaned-score-2023.txt"
-fullset = create_dataset(file_path, 0, 2, 3, 10000, 1)
+file_path = str(os.path.dirname(__file__)) + "/data/processed-score-2023.txt"
+fullset = create_dataset(file_path, 0, 1, 2, 10000, 1)
 while True:
     try:
         n = str(input())
@@ -505,7 +502,7 @@ p_x = {"31478":10, # Bungou Stray Dogs
        "11757":10, # Sword Art Online
        "35994":9, # Angels of Death
        "34572":10, # Black Clover
-    #    "20583":11, # Haikyuu (He gave an 11. You can't do that, but my morbid curiosity has allowed it)
+       "20583":11, # Haikyuu (He gave an 11. You can't do that, but my morbid curiosity has allowed it)
        "20583":10, # Haikyuu (Again, the line above was ran once, this new line corrects the rating from 11 to 10 to see difference in results)
        "42897":10, # Horimiya
        "35849":10, # Darling in The Franxx (Was originally 10000 but that would instantly break the system and basically set him near the furthest possible angle from all other points)
@@ -559,132 +556,132 @@ print(len(anime_ids))
 
 
 
-m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
-m.write("\n\n\n")
-ids, predictions = predict(j_l, anime_ids, fullset, 100)
-m.write("j_l\n")
-for i in range(len(ids)):
-    print(ids[i], predictions[i])
-    m.write(str(ids[i]))
-    m.write(" : ")
-    m.write(str(predictions[i]))
-    m.write("\n")
-m.close()
+# m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
+# m.write("\n\n\n")
+# ids, predictions = predict(j_l, anime_ids, fullset, 100)
+# m.write("j_l\n")
+# for i in range(len(ids)):
+#     print(ids[i], predictions[i])
+#     m.write(str(ids[i]))
+#     m.write(" : ")
+#     m.write(str(predictions[i]))
+#     m.write("\n")
+# m.close()
 
 
-m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
-m.write("\n\n\n")
-ids, predictions = predict(j_c, anime_ids, fullset, 100)
-m.write("j_c\n")
-for i in range(len(ids)):
-    print(ids[i], predictions[i])
-    m.write(str(ids[i]))
-    m.write(" : ")
-    m.write(str(predictions[i]))
-    m.write("\n")
-m.close()
+# m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
+# m.write("\n\n\n")
+# ids, predictions = predict(j_c, anime_ids, fullset, 100)
+# m.write("j_c\n")
+# for i in range(len(ids)):
+#     print(ids[i], predictions[i])
+#     m.write(str(ids[i]))
+#     m.write(" : ")
+#     m.write(str(predictions[i]))
+#     m.write("\n")
+# m.close()
 
 
-m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
-m.write("\n\n\n")
-ids, predictions = predict(r_y, anime_ids, fullset, 100)
-m.write("r_y\n")
-for i in range(len(ids)):
-    print(ids[i], predictions[i])
-    m.write(str(ids[i]))
-    m.write(" : ")
-    m.write(str(predictions[i]))
-    m.write("\n")
-m.close()
+# m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
+# m.write("\n\n\n")
+# ids, predictions = predict(r_y, anime_ids, fullset, 100)
+# m.write("r_y\n")
+# for i in range(len(ids)):
+#     print(ids[i], predictions[i])
+#     m.write(str(ids[i]))
+#     m.write(" : ")
+#     m.write(str(predictions[i]))
+#     m.write("\n")
+# m.close()
 
 
-m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
-m.write("\n\n\n")
-ids, predictions = predict(e_s, anime_ids, fullset, 100)
-m.write("e_s\n")
-for i in range(len(ids)):
-    print(ids[i], predictions[i])
-    m.write(str(ids[i]))
-    m.write(" : ")
-    m.write(str(predictions[i]))
-    m.write("\n")
-m.close()
+# m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
+# m.write("\n\n\n")
+# ids, predictions = predict(e_s, anime_ids, fullset, 100)
+# m.write("e_s\n")
+# for i in range(len(ids)):
+#     print(ids[i], predictions[i])
+#     m.write(str(ids[i]))
+#     m.write(" : ")
+#     m.write(str(predictions[i]))
+#     m.write("\n")
+# m.close()
 
 
-m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
-m.write("\n\n\n")
-ids, predictions = predict(k_m, anime_ids, fullset, 100)
-m.write("k_m\n")
-for i in range(len(ids)):
-    print(ids[i], predictions[i])
-    m.write(str(ids[i]))
-    m.write(" : ")
-    m.write(str(predictions[i]))
-    m.write("\n")
-m.close()
+# m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
+# m.write("\n\n\n")
+# ids, predictions = predict(k_m, anime_ids, fullset, 100)
+# m.write("k_m\n")
+# for i in range(len(ids)):
+#     print(ids[i], predictions[i])
+#     m.write(str(ids[i]))
+#     m.write(" : ")
+#     m.write(str(predictions[i]))
+#     m.write("\n")
+# m.close()
 
 
-m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
-m.write("\n\n\n")
-ids, predictions = predict(a_h, anime_ids, fullset, 100)
-m.write("a_h\n")
-for i in range(len(ids)):
-    print(ids[i], predictions[i])
-    m.write(str(ids[i]))
-    m.write(" : ")
-    m.write(str(predictions[i]))
-    m.write("\n")
-m.close()
+# m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
+# m.write("\n\n\n")
+# ids, predictions = predict(a_h, anime_ids, fullset, 100)
+# m.write("a_h\n")
+# for i in range(len(ids)):
+#     print(ids[i], predictions[i])
+#     m.write(str(ids[i]))
+#     m.write(" : ")
+#     m.write(str(predictions[i]))
+#     m.write("\n")
+# m.close()
 
 
-m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
-m.write("\n\n\n")
-ids, predictions = predict(c_e, anime_ids, fullset, 100)
-m.write("c_e\n")
-for i in range(len(ids)):
-    print(ids[i], predictions[i])
-    m.write(str(ids[i]))
-    m.write(" : ")
-    m.write(str(predictions[i]))
-    m.write("\n")
-m.close()
+# m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
+# m.write("\n\n\n")
+# ids, predictions = predict(c_e, anime_ids, fullset, 100)
+# m.write("c_e\n")
+# for i in range(len(ids)):
+#     print(ids[i], predictions[i])
+#     m.write(str(ids[i]))
+#     m.write(" : ")
+#     m.write(str(predictions[i]))
+#     m.write("\n")
+# m.close()
 
 
-m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
-m.write("\n\n\n")
-ids, predictions = predict(e_y, anime_ids, fullset, 100)
-m.write("e_y\n")
-for i in range(len(ids)):
-    print(ids[i], predictions[i])
-    m.write(str(ids[i]))
-    m.write(" : ")
-    m.write(str(predictions[i]))
-    m.write("\n")
-m.close()
+# m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
+# m.write("\n\n\n")
+# ids, predictions = predict(e_y, anime_ids, fullset, 100)
+# m.write("e_y\n")
+# for i in range(len(ids)):
+#     print(ids[i], predictions[i])
+#     m.write(str(ids[i]))
+#     m.write(" : ")
+#     m.write(str(predictions[i]))
+#     m.write("\n")
+# m.close()
 
-m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
-m.write("\n\n\n")
-ids, predictions = predict(r_q, anime_ids, fullset, 100)
-m.write("r_q\n")
-for i in range(len(ids)):
-    print(ids[i], predictions[i])
-    m.write(str(ids[i]))
-    m.write(" : ")
-    m.write(str(predictions[i]))
-    m.write("\n")
-m.close()
+# m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
+# m.write("\n\n\n")
+# ids, predictions = predict(r_q, anime_ids, fullset, 100)
+# m.write("r_q\n")
+# for i in range(len(ids)):
+#     print(ids[i], predictions[i])
+#     m.write(str(ids[i]))
+#     m.write(" : ")
+#     m.write(str(predictions[i]))
+#     m.write("\n")
+# m.close()
 
-m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
-m.write("\n\n\n")
-ids, predictions = predict(s_l, anime_ids, fullset, 100)
-m.write("s_l\n")
-for i in range(len(ids)):
-    print(ids[i], predictions[i])
-    m.write(str(ids[i]))
-    m.write(" : ")
-    m.write(str(predictions[i]))
-    m.write("\n")
-m.close()
+# m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
+# m.write("\n\n\n")
+# ids, predictions = predict(s_l, anime_ids, fullset, 100)
+# m.write("s_l\n")
+# for i in range(len(ids)):
+#     print(ids[i], predictions[i])
+#     m.write(str(ids[i]))
+#     m.write(" : ")
+#     m.write(str(predictions[i]))
+#     m.write("\n")
+# m.close()
 
 m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
 m.write("\n\n\n")

@@ -24,8 +24,9 @@
 
 # ------ Sorter to create a cleaned user scores sheet that uses tab-delimiters instead of commas and removes anime names entirely, saving file space
 # import os
-# with open(file_path + "/data/cleaned-score-2023.txt", 'w') as newcsv:
-#     with open(file_path  + "/data/users-score-2023 (2).txt", encoding="utf8") as csvf:
+# file_path = str(os.path.dirname(__file__))
+# with open(file_path + "/data/processed-score-2023.txt", 'w') as newcsv:
+#     with open(file_path  + "/data/users-score-2023.txt", encoding="utf8") as csvf:
 #         i = 0
 #         for line in csvf:
 #             i+=1
@@ -35,7 +36,7 @@
 #             if i % 10000 == 0:
 #                 print(i)
 #                 print(line)
-#             newcsv.write('{}\t{}\t{}\t{}\n'.format(w[0], w[1], w[2], w[len(w)-1]))
+#             newcsv.write('{}\t{}\t{}\n'.format(w[0], w[2], w[len(w)-1]))
 
 # print("done cleaning")
 
@@ -44,528 +45,528 @@
 
 
 # ------ Sorter To Process Survey Data Since I didn't specify format and I don't want to type it manually (:
-user = """Code Geass: Lelouch of the Rebellion
+# user = """Code Geass: Lelouch of the Rebellion
 
-10
+# 10
 
-Code Geass: Lelouch of the Rebellion R2
+# Code Geass: Lelouch of the Rebellion R2
 
-10
+# 10
 
-Ouran High School Host Club
+# Ouran High School Host Club
 
-9
+# 9
 
-My Teen Romantic Comedy SNAFU TOO!
+# My Teen Romantic Comedy SNAFU TOO!
 
-9
+# 9
 
-Scum's Wish
+# Scum's Wish
 
-9
+# 9
 
-BOCCHI THE ROCK!
+# BOCCHI THE ROCK!
 
-9
+# 9
 
-Hyouka
+# Hyouka
 
-9
+# 9
 
-Wolf Children
+# Wolf Children
 
-9
+# 9
 
-86 EIGHTY-SIX Part 2
+# 86 EIGHTY-SIX Part 2
 
-9
+# 9
 
-My Teen Romantic Comedy SNAFU Climax!
+# My Teen Romantic Comedy SNAFU Climax!
 
-9
+# 9
 
-Ya Boy Kongming!
+# Ya Boy Kongming!
 
-9
+# 9
 
-Liz and the Blue Bird
+# Liz and the Blue Bird
 
-8
+# 8
 
-A Silent Voice
+# A Silent Voice
 
-8
+# 8
 
-Assassination Classroom 2
+# Assassination Classroom 2
 
-8
+# 8
 
-Chainsaw Man
+# Chainsaw Man
 
-8
+# 8
 
-given
+# given
 
-8
+# 8
 
-HAIKYU!! 2nd Season
+# HAIKYU!! 2nd Season
 
-8
+# 8
 
-HAIKYU!! 3rd Season
+# HAIKYU!! 3rd Season
 
-8
+# 8
 
-HAIKYU!! TO THE TOP Part 2
+# HAIKYU!! TO THE TOP Part 2
 
-8
+# 8
 
-Moriarty the Patriot Part 2
+# Moriarty the Patriot Part 2
 
-8
+# 8
 
-Neon Genesis Evangelion
+# Neon Genesis Evangelion
 
-8
+# 8
 
-Rascal Does Not Dream of a Dreaming Girl
+# Rascal Does Not Dream of a Dreaming Girl
 
-8
+# 8
 
-Rascal Does Not Dream of Bunny Girl Senpai
+# Rascal Does Not Dream of Bunny Girl Senpai
 
-8
+# 8
 
-Sound! Euphonium
+# Sound! Euphonium
 
-8
+# 8
 
-The Promised Neverland
+# The Promised Neverland
 
-8
+# 8
 
-Your lie in Aprill
+# Your lie in Aprill
 
-8
+# 8
 
-Assassination Classroom
+# Assassination Classroom
 
-8
+# 8
 
-Classroom of the Elite Season 2
+# Classroom of the Elite Season 2
 
-8
+# 8
 
-Dance Dance Danseur
+# Dance Dance Danseur
 
-8
+# 8
 
-Fruits Basket Season 2
+# Fruits Basket Season 2
 
-8
+# 8
 
-Fruits Basket The Final Season
+# Fruits Basket The Final Season
 
-8
+# 8
 
-I Want to Eat Your Pancreas
+# I Want to Eat Your Pancreas
 
-8
+# 8
 
-Kaguya-sama: Love is War?
+# Kaguya-sama: Love is War?
 
-8
+# 8
 
-My Teen Romantic Comedy SNAFU
+# My Teen Romantic Comedy SNAFU
 
-8
+# 8
 
-SPY x FAMILY
+# SPY x FAMILY
 
-8
+# 8
 
-Summer Wars
+# Summer Wars
 
-8
+# 8
 
-Suzume
+# Suzume
 
-8
+# 8
 
-86 EIGHTY-SIX
+# 86 EIGHTY-SIX
 
-8
+# 8
 
-BELLE
+# BELLE
 
-8
+# 8
 
-Free! -Eternal Summer-: Forbidden All-Hard!
+# Free! -Eternal Summer-: Forbidden All-Hard!
 
-8
+# 8
 
-Fruits Basket (2019)
+# Fruits Basket (2019)
 
-8
+# 8
 
-Given The Movie
+# Given The Movie
 
-8
+# 8
 
-High Speed! -Free! Starting Days-
+# High Speed! -Free! Starting Days-
 
-8
+# 8
 
-Horimiya
+# Horimiya
 
-8
+# 8
 
-Kaguya-sama: Love is War -The First Kiss That Never Ends-
+# Kaguya-sama: Love is War -The First Kiss That Never Ends-
 
-8
+# 8
 
-Moriarty the Patriot
+# Moriarty the Patriot
 
-8
+# 8
 
-My Dress-Up Darling
+# My Dress-Up Darling
 
-8 
+# 8 
 
-No Game, No Life
+# No Game, No Life
 
-8 
+# 8 
 
-Stars Align
+# Stars Align
 
-8 
+# 8 
 
-White Album 2
+# White Album 2
 
-8 
+# 8 
 
-Aoashi 
+# Aoashi 
 
-8
+# 8
 
-BLUE LOCK
+# BLUE LOCK
 
-8
+# 8
 
-Free! -Eternal Summer-
+# Free! -Eternal Summer-
 
-8
+# 8
 
-HAIKYU!! LAND VS. AIR
+# HAIKYU!! LAND VS. AIR
 
-8
+# 8
  
-Haikyu!! The Movie: Battle of Concepts
+# Haikyu!! The Movie: Battle of Concepts
 
-8
+# 8
 
-HAIKYU!! TO THE TOP
+# HAIKYU!! TO THE TOP
 
-8
+# 8
 
-My Next Life as a Villainess: All Routes Lead to Doom!
+# My Next Life as a Villainess: All Routes Lead to Doom!
 
-8
+# 8
 
-ONIMAI: I'm Now Your Sister!
+# ONIMAI: I'm Now Your Sister!
 
-8
+# 8
 
-Sasaki and Miyano
+# Sasaki and Miyano
 
-8
+# 8
 
-SK8 the Infinity
+# SK8 the Infinity
  
-8
+# 8
 
-The Idol Master
+# The Idol Master
 
-8
+# 8
 
-180-byou de Kimi no Mimi wo Shiawase ni Dekiru ka? C
+# 180-byou de Kimi no Mimi wo Shiawase ni Dekiru ka? C
 
-8
+# 8
 
-Anonymous Noise
+# Anonymous Noise
 
-8
+# 8
 
-BANANA FISH
+# BANANA FISH
 
-8
+# 8
 
-Classroom of the Elite
+# Classroom of the Elite
 
-8
+# 8
 
-Free! -Iwatobi Swim Club-
+# Free! -Iwatobi Swim Club-
 
-8
+# 8
 
-Ghost in the Shell
+# Ghost in the Shell
 
-8
+# 8
 
-given: on the other hand
+# given: on the other hand
 
-8
+# 8
 
-HAIKYU!!
+# HAIKYU!!
 
-8
+# 8
 
-JUJUTSU KAISEN
+# JUJUTSU KAISEN
 
-8
+# 8
 
-Kaguya-sama: Love is War -Ultra Romantic-
+# Kaguya-sama: Love is War -Ultra Romantic-
 
-8
+# 8
 
-Kamisama Kiss
+# Kamisama Kiss
 
-8
+# 8
 
-My Hero Academia Season 2
+# My Hero Academia Season 2
 
-8
+# 8
 
-My Next Life as a Villainess: All Routes Lead to Doom! X
+# My Next Life as a Villainess: All Routes Lead to Doom! X
 
-8
+# 8
 
-Sound! Euphonium: Ready, Set, Monaka
+# Sound! Euphonium: Ready, Set, Monaka
 
-8
+# 8
 
-Talentless Nana
+# Talentless Nana
 
-8
+# 8
 
-Tsuredure Children
+# Tsuredure Children
 
-8
+# 8
 
-VOY@GER
+# VOY@GER
 
-8
+# 8
 
-Your Name.
+# Your Name.
 
-8
+# 8
 
-Bungo Stray Dogs
+# Bungo Stray Dogs
 
-7
+# 7
 
-HAIKYU!!: Lev Appears!
+# HAIKYU!!: Lev Appears!
 
-7 
+# 7 
 
-Kaguya-sama: Love is War
+# Kaguya-sama: Love is War
 
-7 
+# 7 
 
-KONOSUBA-God's blessing on this wonderful world!
+# KONOSUBA-God's blessing on this wonderful world!
 
-7 
+# 7 
 
-Tomodachi Game
+# Tomodachi Game
 
-7 
+# 7 
 
-White Midnight
+# White Midnight
 
-7 
+# 7 
 
-Yosuga no Sora: In Solitude Where We are Least Alone
+# Yosuga no Sora: In Solitude Where We are Least Alone
 
-7 
+# 7 
 
-Yume Juuya
+# Yume Juuya
 
-7 
+# 7 
 
-Crescent rise
+# Crescent rise
 
-7 
+# 7 
 
-Ensemble Stars!
+# Ensemble Stars!
 
-7 
+# 7 
 
-Howl's Moving Castle
+# Howl's Moving Castle
 
-7 
+# 7 
 
-Komi Can't Communicate
+# Komi Can't Communicate
 
-7 
+# 7 
 
-My Hero Academia
+# My Hero Academia
 
-7 
+# 7 
 
-My Hero Academia Season 3
+# My Hero Academia Season 3
 
-7 
+# 7 
 
-My Hero Academia: Heroes Rising
+# My Hero Academia: Heroes Rising
 
-7 
+# 7 
 
-My Hero Academia: World Heroes' Mission
+# My Hero Academia: World Heroes' Mission
 
-7 
+# 7 
 
-Onee-chan ga Kita
+# Onee-chan ga Kita
 
-7 
+# 7 
 
-ReLIFE
+# ReLIFE
 
-7 
+# 7 
 
-THE IDOLM@STER MOVIE: Kagayaki no Mukougawa e!
+# THE IDOLM@STER MOVIE: Kagayaki no Mukougawa e!
 
-7 
+# 7 
 
-Akashic Records of Bastard Magic Instructor
+# Akashic Records of Bastard Magic Instructor
 
-7  
+# 7  
 
-Higehiro: After Being Rejected, I Shaved and Took in a High School Runaway
+# Higehiro: After Being Rejected, I Shaved and Took in a High School Runaway
 
-7
+# 7
 
-Kiss Him, Not Me
+# Kiss Him, Not Me
 
-7 
+# 7 
 
-My Hero Academia: Two Heroes
+# My Hero Academia: Two Heroes
 
-7 
+# 7 
 
-The Idolm@ster: 765 Pro to lu Monogatari
+# The Idolm@ster: 765 Pro to lu Monogatari
 
-7 
+# 7 
 
-Toradora!
+# Toradora!
 
-7 
+# 7 
 
-Why the hell are you here, Teacher!?
+# Why the hell are you here, Teacher!?
 
-7 
+# 7 
 
-Why the hell are you here, Teacher!?: Thirteenth
-Period
+# Why the hell are you here, Teacher!?: Thirteenth
+# Period
 
-7 
+# 7 
 
-Yuri!!! on ICE
+# Yuri!!! on ICE
 
-7 
+# 7 
 
-Masamune-kun's Revenge
+# Masamune-kun's Revenge
 
-7
+# 7
 
-My Hero Academia Season 4
+# My Hero Academia Season 4
 
-7
+# 7
 
-BROTHERS CONFLICT OVA
+# BROTHERS CONFLICT OVA
 
-7
+# 7
 
-I'm the Villainess, So I'm Taming the Final Boss
+# I'm the Villainess, So I'm Taming the Final Boss
 
-7
+# 7
 
-Love Live! School Idol Project
+# Love Live! School Idol Project
 
-7
+# 7
 
-My Hero Academia Season 5
+# My Hero Academia Season 5
  
-7
+# 7
 
-ReLIFE: Final Arc
+# ReLIFE: Final Arc
 
-7
+# 7
 
-Brothers Conflict
+# Brothers Conflict
 
-6
+# 6
 
-Uta no Prince Sama
+# Uta no Prince Sama
  
-6
+# 6
 
-Yarichin & Bitch-bu
+# Yarichin & Bitch-bu
  
-6 
+# 6 
 
-Bibliophile Princess
+# Bibliophile Princess
 
-6 
+# 6 
 
-BROTHERS CONFLICT Special
+# BROTHERS CONFLICT Special
 
-6 
+# 6 
 
-Kaguya-sama wa Kokurasetai: Tensaitachi no Renai
-Zunousen OVA
+# Kaguya-sama wa Kokurasetai: Tensaitachi no Renai
+# Zunousen OVA
 
-6 
+# 6 
 
-Kenka Bancho Otome -Girl Beats Boys-
+# Kenka Bancho Otome -Girl Beats Boys-
 
-6 
+# 6 
 
-The Promised Neverland Season 2
+# The Promised Neverland Season 2
 
-6 
+# 6 
 
-Oretachi Majikou Destroy
+# Oretachi Majikou Destroy
 
-6 
+# 6 
 
-Twittering Birds Never Fly: The Clouds Gather
+# Twittering Birds Never Fly: The Clouds Gather
 
-6 
+# 6 
 
-Yes, No, or Maybe?
+# Yes, No, or Maybe?
 
-5 
+# 5 
 
-The Idolm@ster: Shiny Festa
+# The Idolm@ster: Shiny Festa
 
-5
+# 5
 
-Koikimo
+# Koikimo
 
-4 
-"""
-# separate into lines by \n
-user = user.split("\n")
-# go thru each line in user, if blank, skip, if numeric, add then print
-currentName = ""
-currentRating = ""
-for i in range(len(user)):
-    line = user[i]
-    line = line.strip()
-    if(line == ""):
-        continue
-    if(line.isnumeric()==True):
-        currentRating = line
-        print("\"\":",currentRating,", # ",currentName,sep="")
-    currentName = line
-    # should print each line like this: "":score, # name
+# 4 
+# """
+# # separate into lines by \n
+# user = user.split("\n")
+# # go thru each line in user, if blank, skip, if numeric, add then print
+# currentName = ""
+# currentRating = ""
+# for i in range(len(user)):
+#     line = user[i]
+#     line = line.strip()
+#     if(line == ""):
+#         continue
+#     if(line.isnumeric()==True):
+#         currentRating = line
+#         print("\"\":",currentRating,", # ",currentName,sep="")
+#     currentName = line
+#     # should print each line like this: "":score, # name
