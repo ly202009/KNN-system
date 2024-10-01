@@ -10,7 +10,9 @@ To set up the script locally:
 3. Open "Recommendation System.py" and go to the bottom where the code separates into a user operator region, there is an example user set up to show the template. This will show you how to format your user's data and how to run the program to save the data to a location within the unzipped data folder from earlier.
 
 4. If you run the algorithm and get a list of results returned, you can convert the ids into the names by using Search.py and scrolling to the bottom. Paste inside of prediction the returned data WITH LINES SEPARATED. LIKE AS IN ONE AFTER ANOTHER:
+
 item : rating
+
 item : rating
 LIKE THAT ^^^ JUST PASTE IN WHATEVER THE ALGORITHM RETURNED DIRECTLY, NO FORMATS NEEDED
 
