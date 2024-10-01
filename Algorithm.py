@@ -13,7 +13,7 @@ kf = KFold(n_splits=5)
 
 trainset = data.build_full_trainset()
 algo = KNNBasic(sim_options={"name":"pearson"})
-
+ 
 print(kf)
 # setting trainset to one split of kf and testset to another split of kf
 # training the algo multiple times (5 sets) to improve the algo gradually

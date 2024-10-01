@@ -116,7 +116,7 @@ while(True):
 named_predictions_file = open(file_path + "/data/predictions_id_converted.txt", 'w', encoding="utf8")
 predictions = """
                 Put your returned recommendations below:
-
+ 
               """
 
 

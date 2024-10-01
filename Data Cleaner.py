@@ -27,7 +27,7 @@
 # file_path = str(os.path.dirname(__file__))
 # with open(file_path + "/data/processed-score-2023.txt", 'w') as newcsv:
 #     with open(file_path  + "/data/users-score-2023.txt", encoding="utf8") as csvf:
-#         i = 0
+#         i = 0 
 #         for line in csvf:
 #             i+=1
 #             # seperate by commo rpartition, tail is int

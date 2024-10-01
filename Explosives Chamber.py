@@ -30,7 +30,7 @@
 # 		pretty_dict += f'{k}: \n'
 # 		for value in v:
 # 			pretty_dict += f' {value}: {v[value]}\n'
-# 	#return result
+# 	#return result 
 # 	return pretty_dict
 
 # d = {'gfg': {'remark': 'good', 'rate': 5}, 'cs': {'rate': 3}}

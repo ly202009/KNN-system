@@ -87,7 +87,7 @@ def k_nearest_neighbours(k, user, item, data, min_k, min_common_items):
     min_k - The minimum required neighbours for algorithm to continue, I use 25 usually
     min_common_items - Minimum amount of items in common with another user in order for a similarity calculation to progress
     """
-    
+     
     """
     To start, we need to consider the overlap of data, which points the user does have, and which they dont
     a good starting ground (for me at least) is at least 10% of the movies our target has rated must have also
