@@ -50,12 +50,20 @@ The correlation between user F and any other user is much lower, it's in fact, n
 """
 
 def create_dataset(data_file, user_id_c, item_id_c, rating_c, max_data_users, skip):
+    """
+    data_file - data file to load from
+    user_id_c - the column in the data file to find user ids
+    item_id_c - the column in the data file to find item ids
+    rating_c - the column in the data file to find ratings
+    max_data_users - the maximum amount of users to take from data file
+    skip - how many lines to skip at the beginning of data file to avoid column titles
+    """
     print("Creating Dataset...")
     users = {}
     f = open(data_file, 'r', encoding="utf8").readlines()
     N = len(f)-1
     for i in range(0,N):
-        if skip != 0:
+        if skip > 0:
             skip -= 1
             continue
         line = f[i]
@@ -71,6 +79,15 @@ def create_dataset(data_file, user_id_c, item_id_c, rating_c, max_data_users, sk
 
 
 def k_nearest_neighbours(k, user, item, data, min_k, min_common_items):
+    """
+    k - k nearest neighbours, acts as a maximum number of neighbours allowed
+    user - user data to predict for
+    item - item to predict the rating of
+    data - dataset to use
+    min_k - The minimum required neighbours for algorithm to continue, I use 25 usually
+    min_common_items - Minimum amount of items in common with another user in order for a similarity calculation to progress
+    """
+    
     """
     To start, we need to consider the overlap of data, which points the user does have, and which they dont
     a good starting ground (for me at least) is at least 10% of the movies our target has rated must have also
@@ -159,6 +176,13 @@ def k_nearest_neighbours(k, user, item, data, min_k, min_common_items):
  
 
 def predict(user, content_ids, data, top_x):
+    """
+    user - user to predict for
+    content_ids - list of item ids to find the predicted ratings of
+    data - dataset to use
+    top_x - this returns animes in order of highest score to lowest, top_x determines how many animes from the top and down x should it return
+    """
+    
     # This should be a very simple function that runs KNN on a loop, running thru a list of all content_ids,
     # in this case being anime ids, and predicting with KNN the user's rating for each anime item, adding the 
     # found score to two arrays matching prediction to id, take the top_x returns, remove any that have already 
@@ -189,13 +213,19 @@ def predict(user, content_ids, data, top_x):
 
     return ids, predictions
 
-def accuracy(users, data, k):
+def accuracy(testset, trainset, k):
+    """
+    testset - list of users and their data that acts as testset
+    trainset - dictionary of users and their data that acts as trainset
+    k - the k value to use
+    """
+    
     # loop thru users, for each user, remove a single rating and predict for that rating
     # list the predicted change and the item for which it was listed
     # users = [{anime:rating, anime:rating},{anime:rating, anime:rating}]
     predicted_rating = []
     actual_rating = []
-    for user_set in users:
+    for user_set in testset:
         for key in user_set:
             # append the actual rating
             try:
@@ -207,7 +237,7 @@ def accuracy(users, data, k):
                 temp_user.pop(key)
 
                 # append to predicted_rating the predicted score using temp_user
-                predicted_rating.append(k_nearest_neighbours(k, temp_user, key, data, 25, 3))
+                predicted_rating.append(k_nearest_neighbours(k, temp_user, key, trainset, 25, 3))
             except:
                 print(key)
                 print(user_set)
