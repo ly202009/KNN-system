@@ -205,37 +205,8 @@ f.write(str(k_nearest_neighbours(50, fullset["1"], "320", fullset)))
 f.write("\n")
 # Cool, so it works and is completely functional
 # Now, we're going to TEST ON SOME LAB RATS
-joshua = {"21":1, # One piece
-          "40748":1, # jjk
-          "28819":10, # My wife is the student council president (wtf josh)
-          "8769":10} # I don't even want to write the title for this holy fu-
-
-j_l = {"38000":10, # Demon slayer
-       "20":8, # Naruto
-       "40748":7, # Jjk
-       "20583":9} # Haikyuu
-
-r_y = {"21":8, # One Piece
-       "6702":7, # Fairy Tail
-       "235":7, # Case Closed(conan)
-    #    "":8.5, # Solo Levelling (2024 release, not part of dataset unforutnately)
-       "5114":10, # FMAB (??? wth is that) ohh fullmetal alch
-       "40478":9, # jjk
-       "38000":9.5, # Demon Slayer
-       "9919":8} # Blue Exorcist
-
-e_s = {"":10, # Code Geass: Lelouch of the Rebellion
-       "":10, # Code Geass: Lelouch of the Rebellion R2
-       "853":9, # Ouran High School Host Club
-       "":9, # I'm giving up labelling these there's like 50
-       "":9, 
-       "":9,
-       "":10,
-       "":10,
-       }
-
-p_s = {"30276":8} # Just one punch man bruh patrick wth
-
+# [Data removed for privacy]
+# But you can find it again lol but wutever
 f.close()
 
 
