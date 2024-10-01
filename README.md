@@ -14,6 +14,7 @@ To set up the script locally:
 item : rating
 
 item : rating
+
 LIKE THAT ^^^ JUST PASTE IN WHATEVER THE ALGORITHM RETURNED DIRECTLY, NO FORMATS NEEDED
 
 5. If you want, you can use these functions on your own, identify interesting things about them, try changing the parameters of kNN, or alter the way the algorithm calculates predictions, the comments should be able to help you in deciphering what does what.
