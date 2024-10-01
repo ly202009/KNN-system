@@ -230,44 +230,11 @@ def accuracy(users, data, k):
     except:
         print("No users found")
             
-def best_params(init_k, trainset, testset):
-    variation = 1
-    # check above and below current_k, continue to do so until both cannot beat the previous best from their sector.
-    rmse = accuracy(trainset, testset, init_k)[1]
-    decreased_k_rmse = accuracy(trainset, testset, init_k-variation)[1]
-    increased_k_rmse = accuracy(trainset, testset, init_k+variation)[1]
-    print("Decreased: ", decreased_k_rmse)
-    print("Increased: ", increased_k_rmse)
-    
-    if((decreased_k_rmse >= rmse) and (increased_k_rmse >= rmse)):
-        print("Returned first value")
-        return init_k, rmse
-    
-    else:
-        best_lowered_rmse = decreased_k_rmse
-        best_raised_rmse = increased_k_rmse
-        
-        # set best_rmse to the best score gotten
-        # find decreased rmse by keep going down, if the next one lower still has a better rmse, minus one from current_k        
-        while(decreased_k_rmse < decreased_k_rmse or increased_k_rmse < increased_k_rmse):
-            
-            decreased_k_rmse = accuracy(trainset, testset, init_k-variation)[1]
-            print("Decreased K: ", decreased_k_rmse)
-            if(decreased_k_rmse < best_lowered_rmse):
-                best_lowered_rmse = decreased_k_rmse
-            
-            increased_k_rmse = accuracy(trainset, testset, init_k+variation)[1]
-            print("Increased K: ", increased_k_rmse)
-            if(increased_k_rmse < best_raised_rmse):
-                best_raised_rmse = increased_k_rmse
-    
-    if(best_lowered_rmse > best_raised_rmse):
-        return init_k+variation, best_raised_rmse
-    else:
-        return init_k-variation, best_lowered_rmse
 
 
+# ------------ User Inputs ------------
 #hello its me heheheh
+
 file_path = str(os.path.dirname(__file__)) + "/data/processed-score-2023.txt"
 fullset = create_dataset(file_path, 0, 1, 2, 10000, 1)
 while True:
@@ -279,7 +246,6 @@ while True:
     except:
         print("NOT FOUND!\n")
         continue
-
 
 j_l = {"38000":10, # Demon slayer
        "20":8, # Naruto
@@ -516,21 +482,12 @@ p_x = {"31478":10, # Bungou Stray Dogs
 # print(k_nearest_neighbours(125, j_c, "413", fullset, 25, 3))
 
 users = [j_l, j_c, r_y, k_m, a_h, c_e, e_y, r_q, s_l]
-# e_s, p_x
+# e_s, p_x <---outliers in testset
 
-# for i in range(102, 1000, 2):
-#     acc, rms = accuracy(users, fullset, i)
-#     print(i,"\t", acc, "\t", rms)
-
-# acc, rms = accuracy(users, fullset, 1000)
-# 1 2   3
-# print("The average accuracy is: ", acc, "\nRMSE: ", rms)
-
-# best_k, best_rmse = best_params(300, users, fullset)
-# print("Optimal k: ", best_k, "\nBest RMSE:", best_rmse)
-
-# Okay cool, lab-rats in, we should make a function called predict():
-
+# Loop that outputs the current k and the accuracy and rmse returned from the K
+# for i in range(2, 1000, 2):
+#     acc, rmse = accuracy(users, fullset, i)
+#     print(i,"\t", acc, "\t", rmse)
 
 # get a list of ids to cycle through and predict for each, then rank each by predicted rating to get final
 anime_ids = []
@@ -683,14 +640,16 @@ print(len(anime_ids))
 #     m.write("\n")
 # m.close()
 
-m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
-m.write("\n\n\n")
-ids, predictions = predict(p_x, anime_ids, fullset, 100)
-m.write("p_x\n")
-for i in range(len(ids)):
-    print(ids[i], predictions[i])
-    m.write(str(ids[i]))
-    m.write(" : ")
-    m.write(str(predictions[i]))
-    m.write("\n")
-m.close()
+# m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
+# m.write("\n\n\n")
+# ids, predictions = predict(p_x, anime_ids, fullset, 100)
+# m.write("p_x\n")
+# for i in range(len(ids)):
+#     print(ids[i], predictions[i])
+#     m.write(str(ids[i]))
+#     m.write(" : ")
+#     m.write(str(predictions[i]))
+#     m.write("\n")
+# m.close() 
+
+# 6:01 to 1:12 AM in total. 7 hrs
