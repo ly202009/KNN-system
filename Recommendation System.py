@@ -122,8 +122,8 @@ def k_nearest_neighbours(k, user, item, data, min_k, min_common_items):
     sscores_keys = list(similarity_scores.keys())
     total = 0
     total_sscore = 0
+
     i = 0
-    
     while i < k:
         # run thru the similarity scores, find that users rating for the item and the score they have, multiply
         try:
@@ -137,19 +137,13 @@ def k_nearest_neighbours(k, user, item, data, min_k, min_common_items):
                 break
 
             # Total sum of centered similar user scores multiplied by their similarity score as weight
-            # print("User ID:", sscores_keys[i], "| Similarity Score:", sscores_values[i], "| Rating:", data[sscores_keys[i]][item])
             total += (data[sscores_keys[i]][item] - (sum(data[sscores_keys[i]].values())/len(data[sscores_keys[i]]))) * (sscores_values[i])
-            # total += (data[sscores_keys[i]][item]) * (sscores_values[i])
             total_sscore += sscores_values[i]
             i += 1
         except:
             # print("welp, something broke but it's probably fine (:")
             break
-    # print(total)
-    # print(total_sscore)
-    
-    # for i in users_matched_keys:
-    #     print(users_matched[i][item], similarity_scores[i], (sum(data[i].values())/len(data[i])))
+
     try:
         # get the average centered score of all neighbours, weighted by their similarity scores (as a negative similarity score, since the 
         # rating is centered, it simply will reflect to the other sign, from positive to negative, and vice versa. Then add the users average to
@@ -157,6 +151,7 @@ def k_nearest_neighbours(k, user, item, data, min_k, min_common_items):
         prediction = total/total_sscore + (sum(user.values())/len(user))
         # the above method can exceed the limit of 1 to 10, so we will apply a clamp to keep it between a score of 0 to 10 (the 0 is just an assurance to not eliminate 0.5 answers)
         # prediction = max(min(10, prediction), 0) # If prediction smaller than 10, it moves on, and if it's larger than 0, it moves on.
+        # ^ clamp disabled for sorting reasons
     except:
         return 0
     
@@ -229,35 +224,23 @@ def accuracy(users, data, k):
         return avg, rms_avg
     except:
         print("No users found")
-            
 
 
-# ------------ User Inputs ------------
+# get a list of ids to cycle through and predict for each, then rank each by predicted rating to get final
+# don't touch this unless you want to swap datasets
+anime_ids = []
+file_path = str(os.path.dirname(__file__))
+n = open(file_path + "/data/anime-ids.txt", 'r', encoding="utf8").readlines()
+for i in n:
+    if i.replace("\n","").isnumeric() == True:
+        anime_ids.append(i.replace("\n",""))  
+
 #hello its me heheheh
 
-file_path = str(os.path.dirname(__file__)) + "/data/processed-score-2023.txt"
-fullset = create_dataset(file_path, 0, 1, 2, 10000, 1)
-while True:
-    try:
-        n = str(input())
-        if(n == "cont"):
-            break
-        print(fullset[n], "\n")
-    except:
-        print("NOT FOUND!\n")
-        continue
+# ------------ User Inputs ------------
 
-j_l = {"38000":10, # Demon slayer
-       "20":8, # Naruto
-       "40748":7, # Jjk
-       "20583":9} # Haikyuu
-
-j_c = {"21":1, # One piece
-       "40748":1, # jjk
-       "28819":10, # My wife is the student council president (wtf)
-       "8769":10} # I don't even want to write the title for this holy fu-
-
-r_y = {"21":8, # One Piece
+# Input a user as a dictionary with "item_id":rating, the item_id should be a string, rating is a number
+person_example = {"21":8, # One Piece
        "6702":7, # Fairy Tail
        "235":7, # Case Closed(conan)
     #    "":8.5, # Solo Levelling (2024 release, not part of dataset unforutnately)
@@ -266,390 +249,23 @@ r_y = {"21":8, # One Piece
        "38000":9.5, # Demon Slayer
        "9919":8} # Blue Exorcist
 
-e_s = {"1575":10, # Code Geass: Lelouch of the Rebellion
-       "2904":10, # Code Geass: Lelouch of the Rebellion R2
-       "853":9, # Ouran High School Host Club
-       "23847":9, # My Teen Romantic Comedy SNAFU TOO!
-       "32949":9, # Scum's Wish
-       "47917":9, # BOCCHI THE ROCK!
-       "12189":9, # Hyouka
-       "12355":9, # Wolf Children
-       "48569":9, # 86 EIGHTY-SIX Part 2
-       "39547":9, # My Teen Romantic Comedy SNAFU Climax!
-       "50380":9, # Ya Boy Kongming!
-       "35677":8, # Liz and the Blue Bird
-       "28851":8, # A Silent Voice
-       "30654":8, # Assassination Classroom 2
-       "44511":8, # Chainsaw Man
-       "39533":8, # given
-       "28891":8, # HAIKYU!! 2nd Season
-       "32935":8, # HAIKYU!! 3rd Season
-       "40776":8, # HAIKYU!! TO THE TOP Part 2
-       "43325":8, # Moriarty the Patriot Part 2
-       "30":8, # Neon Genesis Evangelion
-       "38329":8, # Rascal Does Not Dream of a Dreaming Girl
-       "37450":8, # Rascal Does Not Dream of Bunny Girl Senpai
-       "27989":8, # Sound! Euphonium
-       "37779":8, # The Promised Neverland
-       "23273":8, # Your lie in Aprill
-       "24833":8, # Assassination Classroom
-       "51096":8, # Classroom of the Elite Season 2
-       "48702":8, # Dance Dance Danseur
-       "40417":8, # Fruits Basket Season 2
-       "42938":8, # Fruits Basket The Final Season
-       "36098":8, # I Want to Eat Your Pancreas
-       "37999":8, # Kaguya-sama: Love is War?
-       "14813":8, # My Teen Romantic Comedy SNAFU
-       "50265":8, # SPY x FAMILY
-       "5681":8, # Summer Wars
-       "50594":8, # Suzume
-       "41457":8, # 86 EIGHTY-SIX
-       "44807":8, # BELLE
-       "26213":8, # Free! -Eternal Summer-: Forbidden All-Hard!
-       "38680":8, # Fruits Basket (2019)
-       "40421":8, # Given The Movie
-       "30415":8, # High Speed! -Free! Starting Days-
-       "42897":8, # Horimiya
-       "52198":8, # Kaguya-sama: Love is War -The First Kiss That Never Ends-
-       "40911":8, # Moriarty the Patriot
-       "48736":8, # My Dress-Up Darling
-       "19815":8, # No Game, No Life
-       "37972":8, # Stars Align
-       "18245":8, # White Album 2
-       "49052":8, # Aoashi
-       "49596":8, # BLUE LOCK
-       "22265":8, # Free! -Eternal Summer-
-       "40262":8, # HAIKYU!! LAND VS. AIR
-       "35111":8, # Haikyu!! The Movie: Battle of Concepts
-       "38883":8, # HAIKYU!! TO THE TOP
-       "38555":8, # My Next Life as a Villainess: All Routes Lead to Doom!
-       "51678":8, # ONIMAI: I'm Now Your Sister!
-       "44055":8, # Sasaki and Miyano
-       "42923":8, # SK8 the Infinity
-       "10278":8, # The Idol Master
-       "48858":8, # 180-byou de Kimi no Mimi wo Shiawase ni Dekiru ka? C
-       "33203":8, # Anonymous Noise
-       "36649":8, # BANANA FISH
-       "35507":8, # Classroom of the Elite
-       "18507":8, # Free! -Iwatobi Swim Club-
-       "43":8, # Ghost in the Shell
-       "49053":8, # given: on the other hand
-       "20583":8, # HAIKYU!!
-    #    "40748":8, # JUJUTSU KAISEN
-       "43608":8, # Kaguya-sama: Love is War -Ultra Romantic-
-       "14713":8, # Kamisama Kiss
-       "33486":8, # My Hero Academia Season 2
-       "42282":8, # My Next Life as a Villainess: All Routes Lead to Doom! X
-       "31665":8, # Sound! Euphonium: Ready, Set, Monaka
-       "41619":8, # Talentless Nana
-       "34902":8, # Tsuredure Children
-       "49661":8, # VOY@GER
-       "32281":8, # Your Name.
-       "31478":7, # Bungo Stray Dogs
-       "25303":7, # HAIKYU!!: Lev Appears!
-       "37999":7, # Kaguya-sama: Love is War
-       "30831":7, # KONOSUBA-God's blessing on this wonderful world!
-       "50273":7, # Tomodachi Game
-    #    "":7, # White Midnight (Couldn't find this one)
-       "8861":7, # Yosuga no Sora: In Solitude Where We are Least Alone
-    #    "":7, # Yume Juuya (Not found /:)
-       "41167":7, # Crescent rise
-       "32212":7, # Ensemble Stars!
-       "431":7, # Howl's Moving Castle
-       "48926":7, # Komi Can't Communicate
-       "31964":7, # My Hero Academia
-       "36456":7, # My Hero Academia Season 3
-       "39565":7, # My Hero Academia: Heroes Rising
-       "44200":7, # My Hero Academia: World Heroes' Mission
-       "20931":7, # Onee-chan ga Kita
-       "30015":7, # ReLIFE
-       "17437":7, # THE IDOLM@STER MOVIE: Kagayaki no Mukougawa e!
-       "32951":7, # Akashic Records of Bastard Magic Instructor
-       "40938":7, # Higehiro: After Being Rejected, I Shaved and Took in a High School Runaway
-       "32899":7, # Kiss Him, Not Me
-       "36896":7, # My Hero Academia: Two Heroes
-       "11889":7, # The Idolm@ster: 765 Pro to lu Monogatari
-       "4224":7, # Toradora!
-       "38397":7, # Why the hell are you here, Teacher!?
-    #    "":7, # Period (Can't find it)
-       "32995":7, # Yuri!!! on ICE
-       "33487":7, # Masamune-kun's Revenge
-       "38408":7, # My Hero Academia Season 4
-       "25437":7, # BROTHERS CONFLICT OVA
-       "49979":7, # I'm the Villainess, So I'm Taming the Final Boss
-       "15051":7, # Love Live! School Idol Project
-       "41587":7, # My Hero Academia Season 5
-       "35466":7, # ReLIFE: Final Arc
-       "15605":6, # Brothers Conflict
-       "10321":6, # Uta no Prince Sama
-       "37585":6, # Yarichin & Bitch-bu
-       "50923":6, # Bibliophile Princess
-       "22745":6, # BROTHERS CONFLICT Special
-       "43609":6, # Zunousen OVA
-       "34501":6, # Kenka Bancho Otome -Girl Beats Boys-
-       "39617":6, # The Promised Neverland Season 2
-       "52078":6, # Oretachi Majikou Destroy
-       "36799":6, # Twittering Birds Never Fly: The Clouds Gather
-       "40646":5, # Yes,No, or Maybe?
-       "14835":5, # The Idolm@ster: Shiny Festa
-       "41103":4} # Koikimo
-
-k_m = {"30123":7.9, # Snow White with the Red Hair
-       "269":8.9, # Bleach
-       "20":8.6, # Naruto
-       "249":6.8, # Inuyasha
-       "6547":5.7, # Angel Beats!
-       "10087":8, # Fate/Zero
-       "38000":8, # Demon Slayer: Kimetsu No Yaiba
-       "31478":8, # Bungou Stray Dogs
-       "9756":8.7, # Mahou Shouho Madoka Magica
-       "24781":8.6, # Alice In Borderland
-       "28851":8.7} # A Silent Voice
-
-a_h = {"1535":9, # Death Note
-       "11061":9, # Hunter X Hunter
-       "31964":7, # My Hero Academia
-       "30":10, # Evangelion
-       "40748":9, # Jujutsu Kaisen
-       "21":7, # One Piece
-       "38000":2, # Demon Slayer
-       "853":8, # Ouran Host Club
-       "34933":6, # Kakegurui
-       "16592":4, # Danganronpa
-       "431":9, # Howl's Moving Castle
-       "2890":9, # Ponyo
-       "199":10, # Spirited Away
-       "4898":4, # Black Butler
-       "44511":8, # Chainsaw Man
-       "52031":3} # Junji Ito Netflix
-       
-c_e = {"199":10, # Spirited Away
-       "2890":9, # Ponyo
-       "523":9, # My Neighbour Totoro
-       "513":8, # Castle in the Sky
-       "512":10, # Kiki's Delivery Service
-       "431":6, # Howl's Moving Castle
-       "1030":1, # Pom Poko
-       "597":2, # The Cat Returns
-       "16592":7, # Danganronpa
-       "50265":9, # Spy x Family
-       "24781":9} # Alice In Borderland
-       
-e_y = {"32281":10, # Your Name
-       "431":9.5, # Howl's Moving Castle
-       "16498":9.5, # Attack On Titan
-       "36699":10, # The Boy and the Heron
-       "50594":9, # Suzume
-       "38000":8, # Demon Slayer
-       "44511":8, # Chainsaw Man
-       "36649":8, # Banana Fish
-       "31478":7, # Bungou Stray Dogs
-       "513":7} # Castle in The Sky
-
-r_q = {"52991":9, # Frieren
-       "199":9, # Spirited Away
-       "47917":9, # Bocchi the Rock
-       "16662":8, # The Wind Rises
-       "38826":8, # Weathering with You
-       "53876":7, # Pokemon Horizons
-       "11757":3} # Sword Art Online
-    #    "":3 # Legend of Korra Season 2 (Unfortunately is technically american, not listed as anime)
-
-s_l = {"14719":7, # Jojo's Bizarre Adventure
-       "1535":8, # Death Note
-       "38409":7, # Scissor Seven
-       "22535":9, # Parasyte - The Maxim
-       "20583":7, # Haikyuu
-       "49596":7, # Blue Lock
-       "11771":6, # Kuroko no Basket
-       "38000":7} # Demon Slayer
-
-p_x = {"31478":10, # Bungou Stray Dogs
-       "11757":10, # Sword Art Online
-       "35994":9, # Angels of Death
-       "34572":10, # Black Clover
-       "20583":11, # Haikyuu (He gave an 11. You can't do that, but my morbid curiosity has allowed it)
-       "20583":10, # Haikyuu (Again, the line above was ran once, this new line corrects the rating from 11 to 10 to see difference in results)
-       "42897":10, # Horimiya
-       "35849":10, # Darling in The Franxx (Was originally 10000 but that would instantly break the system and basically set him near the furthest possible angle from all other points)
-       "10588":8, # Persona
-       "38000":10, # Demon Slayer
-       "50709":10} # Lycoris Recoil
-    #    "":11} # Wistoria: Wand and Sword (Came out in 2024 sorry not in dataset)
-
-# print(k_nearest_neighbours(125, j_l, "413", fullset, 25, 3))
-# print(k_nearest_neighbours(125, a_h, "413", fullset, 25, 3))
-# print(k_nearest_neighbours(125, j_c, "413", fullset, 25, 3))
-
-users = [j_l, j_c, r_y, k_m, a_h, c_e, e_y, r_q, s_l]
-# e_s, p_x <---outliers in testset
-
-# Loop that outputs the current k and the accuracy and rmse returned from the K
-# for i in range(2, 1000, 2):
-#     acc, rmse = accuracy(users, fullset, i)
-#     print(i,"\t", acc, "\t", rmse)
-
-# get a list of ids to cycle through and predict for each, then rank each by predicted rating to get final
-anime_ids = []
-file_path = str(os.path.dirname(__file__))
-n = open(file_path + "/data/anime-ids.txt", 'r', encoding="utf8").readlines()
-for i in n:
-    if i.replace("\n","").isnumeric() == True:
-        anime_ids.append(i.replace("\n",""))
-
-print(len(anime_ids))
-
-# print(k_nearest_neighbours(50, j_l, "413", fullset, 25, 3), " 1")
-# print(k_nearest_neighbours(50, j_c, "413", fullset, 25, 3), " 2")
-# print(k_nearest_neighbours(50, r_y, "413", fullset, 25, 3), " 3")
-# print(k_nearest_neighbours(50, e_s, "413", fullset, 25, 3), " 4")
-# print(k_nearest_neighbours(50, k_m, "413", fullset, 25, 3), " 5")
-# print(k_nearest_neighbours(50, a_h, "413", fullset, 25, 3), " 6")
-# print(k_nearest_neighbours(50, c_e, "413", fullset, 25, 3), " 7")
-# print(k_nearest_neighbours(50, e_y, "413", fullset, 25, 3), " 8")
-# print(k_nearest_neighbours(50, r_q, "413", fullset, 25, 3), " 9")
-# print(k_nearest_neighbours(50, s_l, "413", fullset, 25, 3), " 10")
-# print(k_nearest_neighbours(50, p_x, "413", fullset, 25, 3), " 11")
+# find filepath of this script's location
+file_path = str(os.path.dirname(__file__)) + "/data/processed-score-2023.txt"
+# read from data files to create dataset, create up to 10000
+fullset = create_dataset(file_path, 0, 1, 2, 10000, 1)
 
 
 
-# m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
-# m.write("\n\n\n")
-# ids, predictions = predict(j_l, anime_ids, fullset, 100)
-# m.write("j_l\n")
-# for i in range(len(ids)):
-#     print(ids[i], predictions[i])
-#     m.write(str(ids[i]))
-#     m.write(" : ")
-#     m.write(str(predictions[i]))
-#     m.write("\n")
-# m.close()
-
-
-# m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
-# m.write("\n\n\n")
-# ids, predictions = predict(j_c, anime_ids, fullset, 100)
-# m.write("j_c\n")
-# for i in range(len(ids)):
-#     print(ids[i], predictions[i])
-#     m.write(str(ids[i]))
-#     m.write(" : ")
-#     m.write(str(predictions[i]))
-#     m.write("\n")
-# m.close()
-
-
-# m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
-# m.write("\n\n\n")
-# ids, predictions = predict(r_y, anime_ids, fullset, 100)
-# m.write("r_y\n")
-# for i in range(len(ids)):
-#     print(ids[i], predictions[i])
-#     m.write(str(ids[i]))
-#     m.write(" : ")
-#     m.write(str(predictions[i]))
-#     m.write("\n")
-# m.close()
-
-
-# m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
-# m.write("\n\n\n")
-# ids, predictions = predict(e_s, anime_ids, fullset, 100)
-# m.write("e_s\n")
-# for i in range(len(ids)):
-#     print(ids[i], predictions[i])
-#     m.write(str(ids[i]))
-#     m.write(" : ")
-#     m.write(str(predictions[i]))
-#     m.write("\n")
-# m.close()
-
-
-# m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
-# m.write("\n\n\n")
-# ids, predictions = predict(k_m, anime_ids, fullset, 100)
-# m.write("k_m\n")
-# for i in range(len(ids)):
-#     print(ids[i], predictions[i])
-#     m.write(str(ids[i]))
-#     m.write(" : ")
-#     m.write(str(predictions[i]))
-#     m.write("\n")
-# m.close()
-
-
-# m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
-# m.write("\n\n\n")
-# ids, predictions = predict(a_h, anime_ids, fullset, 100)
-# m.write("a_h\n")
-# for i in range(len(ids)):
-#     print(ids[i], predictions[i])
-#     m.write(str(ids[i]))
-#     m.write(" : ")
-#     m.write(str(predictions[i]))
-#     m.write("\n")
-# m.close()
-
-
-# m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
-# m.write("\n\n\n")
-# ids, predictions = predict(c_e, anime_ids, fullset, 100)
-# m.write("c_e\n")
-# for i in range(len(ids)):
-#     print(ids[i], predictions[i])
-#     m.write(str(ids[i]))
-#     m.write(" : ")
-#     m.write(str(predictions[i]))
-#     m.write("\n")
-# m.close()
-
-
-# m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
-# m.write("\n\n\n")
-# ids, predictions = predict(e_y, anime_ids, fullset, 100)
-# m.write("e_y\n")
-# for i in range(len(ids)):
-#     print(ids[i], predictions[i])
-#     m.write(str(ids[i]))
-#     m.write(" : ")
-#     m.write(str(predictions[i]))
-#     m.write("\n")
-# m.close()
-
-# m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
-# m.write("\n\n\n")
-# ids, predictions = predict(r_q, anime_ids, fullset, 100)
-# m.write("r_q\n")
-# for i in range(len(ids)):
-#     print(ids[i], predictions[i])
-#     m.write(str(ids[i]))
-#     m.write(" : ")
-#     m.write(str(predictions[i]))
-#     m.write("\n")
-# m.close()
-
-# m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
-# m.write("\n\n\n")
-# ids, predictions = predict(s_l, anime_ids, fullset, 100)
-# m.write("s_l\n")
-# for i in range(len(ids)):
-#     print(ids[i], predictions[i])
-#     m.write(str(ids[i]))
-#     m.write(" : ")
-#     m.write(str(predictions[i]))
-#     m.write("\n")
-# m.close()
-
-# m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
-# m.write("\n\n\n")
-# ids, predictions = predict(p_x, anime_ids, fullset, 100)
-# m.write("p_x\n")
-# for i in range(len(ids)):
-#     print(ids[i], predictions[i])
-#     m.write(str(ids[i]))
-#     m.write(" : ")
-#     m.write(str(predictions[i]))
-#     m.write("\n")
-# m.close() 
-
-# 6:01 to 1:12 AM in total. 7 hrs
+# Predict top 100 for user, output to output.txt in /data folder
+# To set this for your user, replace person_example in predict() with your own user
+m = open(file_path + "/data/output.txt", 'a', encoding="utf8")
+m.write("\n\n\n")
+ids, predictions = predict(person_example, anime_ids, fullset, 100)
+m.write("person_example\n")
+for i in range(len(ids)):
+    print(ids[i], predictions[i])
+    m.write(str(ids[i]))
+    m.write(" : ")
+    m.write(str(predictions[i]))
+    m.write("\n")
+m.close()
