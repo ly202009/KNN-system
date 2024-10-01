@@ -1,6 +1,6 @@
 # KNN-Recommendation-System
  
-This uses centered-cosine similarity and is user-based, so the entire algorithm only predicts by comparing users only. There are no external libraries installed (probably a mistake). 
+This uses centered-cosine similarity and is user-based, so the entire algorithm only predicts by comparing users only. There are no external libraries installed or required for this (probably a mistake but whatever). 
 
 To set up the script locally:
 1. Download the data.zip folder and "Recommendation System.py" and "Search.py" files into the same folder on your computer. The other scripts are experiments, a control algorithm, a data cleaner, and some other random stuff you can check out if you feel like it.
