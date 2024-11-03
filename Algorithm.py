@@ -1,3 +1,21 @@
+# DONT LOOK AT THIS THIS IS ALL GARBAGE
+# JUST TO BE VERY CLEAR
+# COMPLETE TRASH, IF YOU WANT THE REAL SYSTEM GO TO RECOMMENDATION SYSTEM.PY
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import os
 import surprise
 from surprise import KNNBasic, Dataset, Reader, accuracy
